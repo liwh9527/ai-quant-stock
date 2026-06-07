@@ -1,96 +1,132 @@
-/** API 请求封装 */
-
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-
 /**
- * 通用请求方法
+ * Axios 封装 - 统一请求/响应处理
+ * 响应格式: { code: 0, data: ..., msg: "" }
  */
-async function request(url, options = {}) {
-  const res = await fetch(`${BASE_URL}${url}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  })
-  if (!res.ok) {
-    throw new Error(`请求失败: ${res.status} ${res.statusText}`)
+import axios from 'axios'
+
+const api = axios.create({
+  baseURL: '/api',
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+// 请求拦截器
+api.interceptors.request.use(
+  (config) => {
+    // 后续可在此添加 token 等认证信息
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
   }
-  return res.json()
-}
+)
 
-/**
- * POST JSON 请求
- */
-export function post(url, data) {
-  return request(url, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  })
-}
+// 响应拦截器 - 统一处理响应格式 {code, data, msg}
+api.interceptors.response.use(
+  (response) => {
+    const { data } = response
+    // 后端已返回统一格式 {code, data, msg}
+    if (data.code === 0) {
+      return data.data
+    }
+    // 业务错误，抛出包含 msg 的错误
+    const error = new Error(data.msg || '请求失败')
+    error.code = data.code
+    return Promise.reject(error)
+  },
+  (error) => {
+    // HTTP 错误（网络异常、超时、服务端错误等）
+    if (error.response) {
+      const { status } = error.response
+      const errorMap = {
+        400: '请求参数错误',
+        401: '未授权，请重新登录',
+        403: '拒绝访问',
+        404: '请求的资源不存在',
+        500: '服务器内部错误',
+        502: '网关错误',
+        503: '服务不可用',
+      }
+      error.message = errorMap[status] || `HTTP 错误 ${status}`
+    } else if (error.code === 'ECONNABORTED') {
+      error.message = '请求超时，请稍后重试'
+    } else {
+      error.message = '网络异常，请检查网络连接'
+    }
+    return Promise.reject(error)
+  }
+)
 
-/**
- * GET 请求
- */
-export function get(url, params = {}) {
-  const qs = new URLSearchParams(params).toString()
-  const full = qs ? `${url}?${qs}` : url
-  return request(full)
-}
-
-/** 生成信号 */
-export function generateSignals(data) {
-  return post('/api/signal/generate', data)
-}
-
-/** 获取信号列表 */
-export function listSignals(params) {
-  return get('/api/signal/list', params)
-}
-
-/** 创建回测任务 */
-export function runBacktest(data) {
-  return post('/api/backtest/run', data)
-}
-
-/** 查询回测结果 */
-export function getBacktestResult(taskId) {
-  return get(`/api/backtest/result/${taskId}`)
-}
-
-/** 查询回测历史列表 */
-export function listBacktestResults(params) {
-  return get('/api/backtest/list', params)
-}
+// ---- 选股相关 ----
 
 /** 解析选股意图 */
 export function parseScreeningIntent(data) {
-  return post('/api/screening/parse', data)
+  return api.post('/screening/parse', data)
 }
 
 /** 执行选股筛选 */
 export function searchStocks(data) {
-  return post('/api/screening/search', data)
+  return api.post('/screening/search', data)
 }
+
+// ---- 回测相关 ----
+
+/** 创建回测任务 */
+export function runBacktest(data) {
+  return api.post('/backtest/run', data)
+}
+
+/** 查询回测结果 */
+export function getBacktestResult(taskId) {
+  return api.get(`/backtest/result/${taskId}`)
+}
+
+/** 查询回测历史列表 */
+export function listBacktestResults(params) {
+  return api.get('/backtest/list', { params })
+}
+
+// ---- 信号相关 ----
+
+/** 生成信号 */
+export function generateSignals(data) {
+  return api.post('/signal/generate', data)
+}
+
+/** 获取信号列表 */
+export function listSignals(params) {
+  return api.get('/signal/list', { params })
+}
+
+// ---- 归因分析 ----
 
 /** 收益归因分析 */
 export function returnAttribution(data) {
-  return post('/api/attribution/return', data)
+  return api.post('/attribution/return', data)
 }
 
 /** 因子归因分析 */
 export function factorAttribution(data) {
-  return post('/api/attribution/factor', data)
+  return api.post('/attribution/factor', data)
 }
+
+// ---- 因子系统 ----
 
 /** 获取因子列表 */
 export function getFactorList() {
-  return get('/api/factor/list')
+  return api.get('/factor/list')
 }
 
 /** 因子测试 */
 export function testFactor(data) {
-  return post('/api/factor/test', data)
+  return api.post('/factor/test', data)
 }
 
 /** 多因子评分 */
 export function scoreFactors(data) {
-  return post('/api/factor/score', data)
+  return api.post('/factor/score', data)
 }
+
+export default api

@@ -14,9 +14,10 @@
 """
 
 from .indicators import TechnicalIndicators
-from .generator import SignalGenerator
+from .generator import SignalGenerator, StopLossRule
 
 __all__ = [
     "TechnicalIndicators",
     "SignalGenerator",
+    "StopLossRule",
 ]

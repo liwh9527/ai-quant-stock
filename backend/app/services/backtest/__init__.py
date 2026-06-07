@@ -1,18 +1,13 @@
-"""策略回测服务
+"""策略回测服务层
 
-集成 Backtrader 引擎，支持 AI 生成的策略配置自动回测。
+基于 Backtrader 引擎，提供策略回测能力。
+支持 AI 生成的策略配置自动转换为可执行策略。
 
 使用示例：
     from app.services.backtest import BacktestEngine
 
-    engine = BacktestEngine(
-        strategy_config=strategy_config,
-        ts_code="000001.SZ",
-        start_date="2020-01-01",
-        end_date="2024-12-31",
-    )
-    engine.setup(stock_df, benchmark_df)
-    result = engine.run()
+    engine = BacktestEngine(strategy_config)
+    result = engine.run(stock_df, benchmark_df)
 """
 
 from .engine import BacktestEngine

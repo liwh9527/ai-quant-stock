@@ -77,3 +77,37 @@
   - 创建前端多因子系统页面（因子库分类展示、因子测试配置与结果图表、多因子评分配置与排名表格）
   - 注册因子路由到 FastAPI 主入口
   - 更新 api.js 添加因子 API 函数
+
+- 实现买卖信号模块（specs/06-signal）
+  - 创建 TechnicalIndicators 技术指标计算（MACD/KDJ/均线）
+  - 创建 SignalGenerator 信号生成器（MACD 金叉死叉、KDJ 超买超卖、均线交叉信号，含止损止盈规则）
+  - 创建信号 API（POST /api/signal/generate 生成信号并持久化，GET /api/signal/list 查询信号列表）
+  - 创建前端 K 线图组件（TradingView Lightweight Charts，支持信号标注）
+  - 创建 MACD/KDJ 指标副图组件（ECharts）
+  - 创建买卖信号页面（股票选择、指标选择、时间范围、K 线图+信号标注、信号列表）
+  - 注册信号路由到 FastAPI 主入口
+  - 更新 api.js 添加信号 API 函数
+  - 新增 lightweight-charts 前端依赖
+
+- 定义数据库 ORM 模型（specs/01-data-model）
+  - 创建 app/models/__init__.py 统一导出所有模型
+  - 创建 app/models/stock.py Stock 股票基础信息表
+  - 创建 app/models/daily.py DailyQuote 日线行情表（含唯一约束和复合索引）
+  - 创建 app/models/weekly.py WeeklyQuote 周线行情表（含唯一约束）
+  - 创建 app/models/financial.py FinancialIndicator 财务指标表（盈利/成长/估值/负债/每股指标）
+  - 创建 app/models/signal.py TradeSignal 交易信号表（含复合索引）
+  - 创建 app/models/backtest.py BacktestResult 回测结果表（收益/风险/交易统计指标）
+  - 创建 app/models/watchlist.py UserWatchlist 自选股表
+  - 所有模型继承 app.core.database.Base，使用 SQLAlchemy 2.0 声明式语法
+  - 外键关联 stocks.ts_code，索引和约束按规格文档定义
+
+- 完善策略回测前端页面（specs/05-backtest）
+  - 回测页面包含：策略描述 textarea、日期/资金/基准参数配置、开始回测按钮
+  - 结果展示：指标卡片（总收益率、年化收益率、最大回撤、夏普比率、胜率等）
+  - 收益曲线图表（ECharts）+ 交易记录表格
+  - 支持策略示例快捷输入、佣金率/滑点高级参数
+  - 标记 05-backtest 全部任务为已完成
+
+- 修复回测页面 API 响应处理 bug
+  - 修复 Backtest.jsx 中因 axios 拦截器已解包 {code, data, msg} 导致 res.code 始终为 undefined 的问题
+  - 移除多余的 code 检查逻辑，直接使用拦截器返回的 data

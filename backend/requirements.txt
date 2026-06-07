@@ -11,3 +11,8 @@ akshare
 pandas
 numpy
 backtrader
+
+# 测试依赖
+pytest
+pytest-asyncio
+pytest-cov

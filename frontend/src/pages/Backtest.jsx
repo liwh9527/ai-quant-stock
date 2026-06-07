@@ -59,7 +59,8 @@ export default function Backtest() {
     setResult(null)
 
     try {
-      const res = await runBacktest({
+      // api 拦截器已解包 {code, data, msg}，成功时直接返回 data
+      const data = await runBacktest({
         strategy_description: strategyDesc,
         ts_code: tsCode,
         start_date: startDate,
@@ -70,11 +71,7 @@ export default function Backtest() {
         slippage,
       })
 
-      if (res.code === 0) {
-        setResult(res.data)
-      } else {
-        setError(res.msg || '回测失败')
-      }
+      setResult(data)
     } catch (e) {
       setError(e.message || '请求失败，请检查后端是否启动')
     } finally {

@@ -1,23 +1,20 @@
-import { useState } from 'react'
-import Signal from './pages/Signal'
-import Backtest from './pages/Backtest'
+/**
+ * 应用入口 - 路由配置
+ */
+import { Routes, Route, NavLink } from 'react-router-dom'
+import Home from './pages/Home'
 import Screening from './pages/Screening'
-import Attribution from './pages/Attribution'
-import Factor from './pages/Factor'
+import Backtest from './pages/Backtest'
+import Signal from './pages/Signal'
 
-const PAGES = {
-  screening: { label: '自然语言选股', component: Screening },
-  signal: { label: '买卖信号', component: Signal },
-  backtest: { label: '策略回测', component: Backtest },
-  factor: { label: '多因子', component: Factor },
-  attribution: { label: '归因分析', component: Attribution },
-}
+const NAV_ITEMS = [
+  { path: '/', label: '首页' },
+  { path: '/screening', label: '选股' },
+  { path: '/backtest', label: '回测' },
+  { path: '/signal', label: '信号' },
+]
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('screening')
-
-  const PageComponent = PAGES[currentPage]?.component
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 顶部导航 */}
@@ -27,25 +24,33 @@ function App() {
             AI 量化选股
           </h1>
           <div className="flex gap-2 overflow-x-auto">
-            {Object.entries(PAGES).map(([key, { label }]) => (
-              <button
-                key={key}
-                onClick={() => setCurrentPage(key)}
-                className={`px-3 py-1 text-sm rounded whitespace-nowrap transition-colors ${
-                  currentPage === key
-                    ? 'bg-blue-500 text-white'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
+            {NAV_ITEMS.map(({ path, label }) => (
+              <NavLink
+                key={path}
+                to={path}
+                end={path === '/'}
+                className={({ isActive }) =>
+                  `px-3 py-1 text-sm rounded whitespace-nowrap transition-colors ${
+                    isActive
+                      ? 'bg-blue-500 text-white'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`
+                }
               >
                 {label}
-              </button>
+              </NavLink>
             ))}
           </div>
         </div>
       </nav>
 
-      {/* 页面内容 */}
-      {PageComponent && <PageComponent />}
+      {/* 路由出口 */}
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/screening" element={<Screening />} />
+        <Route path="/backtest" element={<Backtest />} />
+        <Route path="/signal" element={<Signal />} />
+      </Routes>
     </div>
   )
 }

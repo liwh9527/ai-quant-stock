@@ -1,0 +1,45 @@
+/**
+ * 常量定义 - 错误码、枚举等
+ */
+
+// 统一错误码定义
+export const ERROR_CODES = {
+  SUCCESS: 0,
+  // 参数错误 1001-1999
+  PARAM_INVALID: 1001,
+  PARAM_MISSING: 1002,
+  // 数据源错误 2001-2999
+  DATA_SOURCE_ERROR: 2001,
+  DATA_NOT_FOUND: 2002,
+  DATA_SYNC_FAILED: 2003,
+  // AI 服务错误 3001-3999
+  AI_SERVICE_ERROR: 3001,
+  AI_PARSE_FAILED: 3002,
+  AI_QUOTA_EXCEEDED: 3003,
+  // 回测错误 4001-4999
+  BACKTEST_ERROR: 4001,
+  BACKTEST_TIMEOUT: 4002,
+  BACKTEST_INVALID_STRATEGY: 4003,
+  // 系统错误
+  SYSTEM_ERROR: -1,
+}
+
+// 错误码对应的用户提示信息
+export const ERROR_MESSAGES = {
+  [ERROR_CODES.SUCCESS]: '操作成功',
+  [ERROR_CODES.PARAM_INVALID]: '参数格式不正确',
+  [ERROR_CODES.PARAM_MISSING]: '缺少必要参数',
+  [ERROR_CODES.DATA_SOURCE_ERROR]: '数据源请求失败，请稍后重试',
+  [ERROR_CODES.DATA_NOT_FOUND]: '未找到相关数据',
+  [ERROR_CODES.DATA_SYNC_FAILED]: '数据同步失败',
+  [ERROR_CODES.AI_SERVICE_ERROR]: 'AI 服务异常，请稍后重试',
+  [ERROR_CODES.AI_PARSE_FAILED]: 'AI 无法理解您的描述，请换个说法试试',
+  [ERROR_CODES.AI_QUOTA_EXCEEDED]: 'AI 服务调用次数已达上限',
+  [ERROR_CODES.BACKTEST_ERROR]: '回测执行失败',
+  [ERROR_CODES.BACKTEST_TIMEOUT]: '回测超时，请缩短回测时间范围',
+  [ERROR_CODES.BACKTEST_INVALID_STRATEGY]: '策略格式不正确',
+  [ERROR_CODES.SYSTEM_ERROR]: '系统异常，请稍后重试',
+}
+
+// API 基础路径
+export const API_BASE_URL = '/api'
