@@ -60,3 +60,20 @@
   - 更新 App.jsx 添加选股导航（默认首页）
   - 更新 api.js 添加选股 API 函数
   - 注册选股路由到 FastAPI 主入口
+
+- 实现归因分析模块（specs/08-attribution）
+  - 创建 BrinsonAttribution 归因模型（行业选择收益、个股选择收益、交互效应）
+  - 创建 FactorAttribution 因子归因（因子暴露计算、因子收益分解）
+  - 创建归因 API（POST /api/attribution/return 收益归因，POST /api/attribution/factor 因子归因）
+  - 创建前端归因分析页面（选择回测任务、收益分解柱状图、行业贡献表格、因子贡献图表）
+  - 注册归因路由到 FastAPI 主入口
+  - 更新 api.js 添加归因 API 函数
+
+- 实现多因子系统模块（specs/07-factor）
+  - 创建因子定义模块（11个因子：价值PE/PB/PS、成长营收同比/净利润同比、质量ROE/ROA/毛利率、动量5日/20日、波动20日波动率）
+  - 创建因子分析器（calc_ic 信息系数、calc_ir 信息比率、group_returns 分组收益、calc_correlation 因子相关性矩阵）
+  - 创建多因子评分器（Z-Score 标准化、因子方向调整、加权评分、全市场排名）
+  - 创建因子 API（GET /api/factor/list 因子列表、POST /api/factor/test 因子测试、POST /api/factor/score 多因子评分）
+  - 创建前端多因子系统页面（因子库分类展示、因子测试配置与结果图表、多因子评分配置与排名表格）
+  - 注册因子路由到 FastAPI 主入口
+  - 更新 api.js 添加因子 API 函数

@@ -69,3 +69,28 @@ export function parseScreeningIntent(data) {
 export function searchStocks(data) {
   return post('/api/screening/search', data)
 }
+
+/** 收益归因分析 */
+export function returnAttribution(data) {
+  return post('/api/attribution/return', data)
+}
+
+/** 因子归因分析 */
+export function factorAttribution(data) {
+  return post('/api/attribution/factor', data)
+}
+
+/** 获取因子列表 */
+export function getFactorList() {
+  return get('/api/factor/list')
+}
+
+/** 因子测试 */
+export function testFactor(data) {
+  return post('/api/factor/test', data)
+}
+
+/** 多因子评分 */
+export function scoreFactors(data) {
+  return post('/api/factor/score', data)
+}

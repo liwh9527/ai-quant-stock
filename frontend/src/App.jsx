@@ -2,11 +2,15 @@ import { useState } from 'react'
 import Signal from './pages/Signal'
 import Backtest from './pages/Backtest'
 import Screening from './pages/Screening'
+import Attribution from './pages/Attribution'
+import Factor from './pages/Factor'
 
 const PAGES = {
   screening: { label: '自然语言选股', component: Screening },
   signal: { label: '买卖信号', component: Signal },
   backtest: { label: '策略回测', component: Backtest },
+  factor: { label: '多因子', component: Factor },
+  attribution: { label: '归因分析', component: Attribution },
 }
 
 function App() {
