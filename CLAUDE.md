@@ -63,5 +63,34 @@ QWEN_API_KEY=xxx           # 备选
 DATABASE_URL=sqlite:///data/quant.db
 ```
 
+## 规格文档
+
+详细的技术规格文档在 `specs/` 目录下：
+
+```
+specs/
+├── README.md              # 规格文档索引 + 开发流程说明
+├── 00-architecture.md     # 整体架构设计
+├── 01-data-model.md       # 数据库模型
+├── 02-data-source.md      # 数据源接入层
+├── 03-ai-service.md       # AI 服务层
+├── 04-stock-screening.md  # 自然语言选股
+├── 05-backtest.md         # 策略回测
+├── 06-signal.md           # 买卖信号
+├── 07-factor.md           # 多因子系统
+├── 08-attribution.md      # 归因分析
+└── tasks.md               # 任务跟踪
+```
+
+### 开发流程
+
+1. 阅读 `specs/README.md` 了解全局
+2. 查看 `specs/tasks.md` 找到下一个待办任务
+3. 阅读对应模块的 spec 文档
+4. 按 spec 中的"实现顺序"逐步实现
+5. 对照"验收标准"检查完成度
+6. 更新 `tasks.md` 标记完成
+7. `git commit` 提交
+
 ## 当前阶段
 P0 — MVP：自然语言选股、策略回测、买卖信号
