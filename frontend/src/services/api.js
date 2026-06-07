@@ -44,3 +44,18 @@ export function generateSignals(data) {
 export function listSignals(params) {
   return get('/api/signal/list', params)
 }
+
+/** 创建回测任务 */
+export function runBacktest(data) {
+  return post('/api/backtest/run', data)
+}
+
+/** 查询回测结果 */
+export function getBacktestResult(taskId) {
+  return get(`/api/backtest/result/${taskId}`)
+}
+
+/** 查询回测历史列表 */
+export function listBacktestResults(params) {
+  return get('/api/backtest/list', params)
+}

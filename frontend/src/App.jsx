@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import Signal from './pages/Signal'
+import Backtest from './pages/Backtest'
 
 const PAGES = {
   signal: { label: '买卖信号', component: Signal },
+  backtest: { label: '策略回测', component: Backtest },
 }
 
 function App() {

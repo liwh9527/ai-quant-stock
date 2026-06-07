@@ -43,3 +43,12 @@
   - 实现 DataCache 缓存层（内存缓存，MD5 键，自动淘汰策略）
   - 实现 DataImportService 落库服务（股票列表、日线行情、财务指标增量导入）
   - 在 config.py 中新增 DATA_SOURCE_TYPE 配置项
+
+- 实现策略回测模块（specs/05-backtest）
+  - 创建 BacktestEngine 回测引擎（集成 Backtrader，支持资金/佣金/滑点配置，提取收益指标）
+  - 创建 AIStrategy 策略适配层（将 AI 策略配置转为 Backtrader 策略，支持 MACD/KDJ/MA/EMA/RSI/BOLL）
+  - 创建回测 API（POST /api/backtest/run 创建任务，GET /api/backtest/result/{task_id} 查询结果）
+  - 创建回测历史列表 API（GET /api/backtest/list）
+  - 创建前端策略回测页面（策略描述输入、参数配置、收益曲线、指标卡片、交易记录）
+  - 新增 ECharts 依赖用于收益曲线绘制
+  - 注册回测路由到 FastAPI 主入口
