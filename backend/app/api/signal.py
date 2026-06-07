@@ -96,7 +96,7 @@ async def generate_signals(req: SignalGenerateRequest, db: Session = Depends(get
         if not exists:
             db_signal = TradeSignal(
                 ts_code=req.ts_code,
-                signal_date=sig["date"],
+                signal_date=date.fromisoformat(sig["date"]),
                 signal_type=sig["type"],
                 strategy_name="technical",
                 signal_source=sig["indicator"],

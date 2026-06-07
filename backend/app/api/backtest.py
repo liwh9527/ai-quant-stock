@@ -57,8 +57,8 @@ def _get_stock_data(source, ts_code: str, start_date: str, end_date: str):
     try:
         df = source.get_daily_quotes(
             ts_code=ts_code,
-            start_date=start_date.replace("-", ""),
-            end_date=end_date.replace("-", ""),
+            start_date=date.fromisoformat(start_date),
+            end_date=date.fromisoformat(end_date),
         )
         if df is not None and not df.empty:
             return df
@@ -74,8 +74,8 @@ def _get_benchmark_data(source, benchmark_code: str, start_date: str, end_date: 
     try:
         df = source.get_daily_quotes(
             ts_code=benchmark_code,
-            start_date=start_date.replace("-", ""),
-            end_date=end_date.replace("-", ""),
+            start_date=date.fromisoformat(start_date),
+            end_date=date.fromisoformat(end_date),
         )
         if df is not None and not df.empty:
             return df

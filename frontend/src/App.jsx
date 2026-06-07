@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import Signal from './pages/Signal'
 import Backtest from './pages/Backtest'
+import Screening from './pages/Screening'
 
 const PAGES = {
+  screening: { label: '自然语言选股', component: Screening },
   signal: { label: '买卖信号', component: Signal },
   backtest: { label: '策略回测', component: Backtest },
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('signal')
+  const [currentPage, setCurrentPage] = useState('screening')
 
   const PageComponent = PAGES[currentPage]?.component
 

@@ -52,3 +52,11 @@
   - 创建前端策略回测页面（策略描述输入、参数配置、收益曲线、指标卡片、交易记录）
   - 新增 ECharts 依赖用于收益曲线绘制
   - 注册回测路由到 FastAPI 主入口
+
+- 实现自然语言选股模块（specs/04-stock-screening）
+  - 创建 ScreeningService 选股服务（parse_query 调用 AI 解析、search 执行多条件筛选、支持 PE/ROE/行业等组合条件）
+  - 创建选股 API（POST /api/screening/parse 解析意图，POST /api/screening/search 执行筛选，支持分页和排序）
+  - 创建前端自然语言选股页面（自然语言输入框、可编辑/删除的条件标签、股票结果表格、移动端卡片布局、分页）
+  - 更新 App.jsx 添加选股导航（默认首页）
+  - 更新 api.js 添加选股 API 函数
+  - 注册选股路由到 FastAPI 主入口

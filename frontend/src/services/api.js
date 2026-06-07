@@ -59,3 +59,13 @@ export function getBacktestResult(taskId) {
 export function listBacktestResults(params) {
   return get('/api/backtest/list', params)
 }
+
+/** 解析选股意图 */
+export function parseScreeningIntent(data) {
+  return post('/api/screening/parse', data)
+}
+
+/** 执行选股筛选 */
+export function searchStocks(data) {
+  return post('/api/screening/search', data)
+}
