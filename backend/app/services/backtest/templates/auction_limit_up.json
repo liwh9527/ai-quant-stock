@@ -1,0 +1,68 @@
+{
+  "name": "竞价涨停连板策略",
+  "version": "1.0",
+  "description": "每日从涨停股中筛选竞价涨幅最高的买入，断板卖出",
+  "screening": {
+    "universe": "all",
+    "conditions": [
+      {
+        "field": "prev_limit_up",
+        "op": "==",
+        "value": true
+      },
+      {
+        "field": "circ_mv",
+        "op": "<",
+        "value": 2000000
+      },
+      {
+        "field": "close",
+        "op": "<",
+        "value": 50
+      }
+    ],
+    "sort": {
+      "field": "auction_pct",
+      "order": "desc"
+    },
+    "limit": 3
+  },
+  "entry": {
+    "timing": "open",
+    "position_sizing": {
+      "method": "equal"
+    }
+  },
+  "exit": {
+    "rules": [
+      {
+        "type": "break_limit_up",
+        "action": "sell_at_close"
+      },
+      {
+        "type": "stop_loss",
+        "pct": -0.05,
+        "action": "sell_immediate"
+      }
+    ]
+  },
+  "risk_control": {
+    "max_positions": 3,
+    "market_timing": {
+      "enabled": true,
+      "index": "000001.SH",
+      "condition": "close > ma5"
+    },
+    "consecutive_loss_pause": {
+      "enabled": true,
+      "threshold": 3,
+      "pause_days": 1
+    }
+  },
+  "cost": {
+    "commission": 0.0003,
+    "stamp_tax": 0.001,
+    "slippage": 0.001
+  },
+  "initial_cash": 1000000
+}

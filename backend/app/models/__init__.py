@@ -7,6 +7,8 @@ from app.models.stock import Stock
 from app.models.daily import DailyQuote
 from app.models.weekly import WeeklyQuote
 from app.models.financial import FinancialIndicator
+from app.models.daily_basic import DailyBasic
+from app.models.index_daily import IndexDaily
 from app.models.signal import TradeSignal
 from app.models.backtest import BacktestResult
 from app.models.watchlist import UserWatchlist
@@ -16,6 +18,8 @@ __all__ = [
     "DailyQuote",
     "WeeklyQuote",
     "FinancialIndicator",
+    "DailyBasic",
+    "IndexDaily",
     "TradeSignal",
     "BacktestResult",
     "UserWatchlist",

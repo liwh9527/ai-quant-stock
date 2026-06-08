@@ -119,7 +119,7 @@
 > 详细计划见 `specs/backtest-engine-v2.md`
 
 ### 10-backtest-v2 回测引擎 V2
-- [ ] 实现 DataManager 统一数据管理器
+- [x] 实现 DataManager 统一数据管理器
 - [ ] 实现 DailyScreeningEngine 每日选股引擎
 - [ ] 实现 Portfolio 投资组合管理
 - [ ] 实现 Order 订单管理（支持 T+1）
@@ -152,6 +152,6 @@
 | 07-factor | 9 | 9 | 100% |
 | 08-attribution | 9 | 9 | 100% |
 | 09-testing | 12 | 12 | 100% |
-| 10-backtest-v2 | 11 | 0 | 0% |
+| 10-backtest-v2 | 11 | 1 | 9% |
 | 11-data-import | 5 | 0 | 0% |
-| **总计** | **102** | **86** | **84%** |
+| **总计** | **102** | **87** | **85%** |
