@@ -253,6 +253,11 @@ class ScreeningService:
 
             col = FIELD_MAP[field_name]
 
+            # 跳过 value 为 None 的条件
+            if value is None:
+                logger.warning(f"跳过缺少 value 的条件: {field_name} {operator}")
+                continue
+
             if operator == ">":
                 query = query.filter(col > value)
             elif operator == "<":
