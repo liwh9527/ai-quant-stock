@@ -71,8 +71,8 @@
 - [x] 实现 K 线图组件
 - [x] 实现信号标注
 - [x] 实现信号列表组件
-- [ ] 前后端联调
-- [ ] 编写单元测试 (pytest)
+- [x] 前后端联调
+- [x] 编写单元测试 (pytest)
 
 ## Phase 3: P1 增强功能
 
@@ -95,8 +95,8 @@
 - [x] 实现前端归因页面
 - [x] 实现收益分解图表
 - [x] 实现行业贡献图表
-- [ ] 前后端联调
-- [ ] 编写单元测试 (pytest)
+- [x] 前后端联调
+- [x] 编写单元测试 (pytest)
 
 ## Phase 4: 测试与质量保证
 
@@ -109,23 +109,49 @@
 - [x] 编写 Mock 外部服务测试
 - [x] 编写边界条件测试
 - [x] 编写错误处理测试
-- [ ] 编写前端组件测试
+- [x] 编写前端组件测试
 - [x] 配置 CI/CD 流水线
 - [x] 运行测试并确保通过
-- [ ] 生成测试覆盖率报告
+- [x] 生成测试覆盖率报告
+
+## Phase 5: 回测引擎 V2 重构
+
+> 详细计划见 `specs/backtest-engine-v2.md`
+
+### 10-backtest-v2 回测引擎 V2
+- [ ] 实现 DataManager 统一数据管理器
+- [ ] 实现 DailyScreeningEngine 每日选股引擎
+- [ ] 实现 Portfolio 投资组合管理
+- [ ] 实现 Order 订单管理（支持 T+1）
+- [ ] 实现 PortfolioBacktestEngine 多股票组合回测引擎
+- [ ] 实现 StrategyParser 策略 DSL 解析器
+- [ ] 编写策略配置 JSON Schema
+- [ ] 改造回测 API 支持 DSL
+- [ ] 集成竞价涨停策略模板
+- [ ] 编写 V2 引擎单元测试
+- [ ] 用历史数据验证 V2 引擎结果
+
+### 11-data-import 数据补充
+- [ ] 补充 daily 日线至 2 年（动量因子）
+- [ ] 导入 moneyflow 资金流向数据
+- [ ] 导入 income 利润表数据
+- [ ] 导入 balancesheet 资产负债表数据
+- [ ] 导入 dividend 分红数据
 
 ## 进度统计
 
 | 模块 | 总任务 | 已完成 | 进度 |
 |------|--------|--------|------|
-| 00-architecture | 6 | 5 | 83% |
-| 01-data-model | 10 | 7 | 70% |
+| 00-architecture | 6 | 6 | 100% |
+| 01-data-model | 10 | 10 | 100% |
 | 02-data-source | 7 | 7 | 100% |
 | 03-ai-service | 7 | 7 | 100% |
-| 04-stock-screening | 8 | 6 | 75% |
+| 04-stock-screening | 8 | 8 | 100% |
 | 05-backtest | 9 | 9 | 100% |
-| 06-signal | 9 | 7 | 78% |
+| 06-signal | 9 | 9 | 100% |
 | 07-factor | 9 | 9 | 100% |
-| 08-attribution | 9 | 7 | 78% |
-| 09-testing | 12 | 6 | 50% |
-| **总计** | **86** | **63** | **73%** |
+| 08-attribution | 9 | 9 | 100% |
+| 09-testing | 12 | 12 | 100% |
+| 10-backtest-v2 | 11 | 0 | 0% |
+| 11-data-import | 5 | 0 | 0% |
+| **总计** | **102** | **86** | **84%** |

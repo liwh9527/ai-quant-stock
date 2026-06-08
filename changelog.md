@@ -1,5 +1,29 @@
 # 变更日志
 
+## 2026-06-09
+
+- 回测引擎 V2 重构计划
+  - 创建 `specs/backtest-engine-v2.md` 详细计划文档
+  - 设计多股票组合回测框架架构
+  - 设计策略 DSL（JSON 配置化策略）
+  - 设计每日选股引擎
+  - 设计统一数据管理器（DataManager）
+  - 规划 6 个实施阶段，预计 16 小时工作量
+  - 更新 `specs/tasks.md` 新增 Phase 5 任务
+
+- 竞价涨停连板策略回测验证
+  - 实现竞价涨停连板策略独立回测脚本
+  - T+1 交易规则修正（买入当天不能卖出）
+  - 仓位管理优化（总资金 1/3 分配）
+  - 连板追踪逻辑（涨停持有，断板卖出）
+  - 止损规则（跌破买入价-5%）
+  - 回测结果：收益率+130.87%，盈亏比2.36，最大回撤29.94%
+
+- 数据库补充
+  - 导入 daily_basic 估值数据（329,504 条，PE/PB/PS/换手率/流通市值）
+  - 导入 index_daily 指数日线（1,464 条，上证/沪深300/中证500）
+  - 新增 TinyShare 数据源支持（Tushare 兼容，无频率限制）
+
 ## 2026-06-07
 
 - 初始化项目：AI 辅助量化选股工具
@@ -111,3 +135,36 @@
 - 修复回测页面 API 响应处理 bug
   - 修复 Backtest.jsx 中因 axios 拦截器已解包 {code, data, msg} 导致 res.code 始终为 undefined 的问题
   - 移除多余的 code 检查逻辑，直接使用拦截器返回的 data
+
+## 2026-06-08
+
+- 修复 SignalGenerator 中 Timestamp 与 datetime.date 比较的 bug
+  - _macd_signals、_kdj_signals、_ma_signals 方法中 dates[i] < start_date 会抛 TypeError
+  - 统一使用 pd.Timestamp(start_date) 进行比较
+
+- 修复前端 Jest 配置
+  - 将 jest.config.js 改为 jest.config.cjs（package.json 使用 ESM）
+  - 修正 setupFilesAfterSetup 为 setupFilesAfterEnv（Jest 正确配置键名）
+
+- 增强买卖信号模块测试（specs/06-signal）
+  - 新增 SignalGenerator 完整测试（MACD/KDJ/MA/多指标/空数据/自定义参数/K线结构/排序）
+  - 新增 TechnicalIndicators 补充测试（自定义参数/恒定价格/长度验证）
+  - 新增 StopLossRule 边界值和自定义比例测试
+  - 新增信号 API 测试（generate/list 端点、数据库写入验证）
+  - 修复信号 API 测试中的数据库 mock 问题（dependency_overrides）
+
+- 增强归因分析模块测试（specs/08-attribution）
+  - 新增 BrinsonAttribution 完整测试（summary/details 字段、同权重无选择效应、超额收益分解、排序、加权收益、独有行业、精度验证）
+  - 新增 FactorAttribution 完整测试（字段验证、中文名称映射、空组合、缺失因子值、零权重、排序、占比求和、单股票、未知因子名）
+  - 新增归因 API 测试（return/factor 端点、默认参数、交易记录）
+
+- 编写前端组件测试（specs/09-testing）
+  - SignalTable 组件测试（空数据、标题、日期、买卖标签、指标、价格、原因）
+  - MetricsCards 组件测试（空数据、标签、数值、颜色、零值）
+  - API 服务层测试（函数导出验证）
+
+- 生成测试覆盖率报告
+  - 后端：52% 总覆盖率，147 个测试全部通过
+  - 前端：MetricsCards 100%、SignalTable 100%，33 个测试全部通过
+
+- 更新 tasks.md，所有 86 个任务标记为已完成（100%）

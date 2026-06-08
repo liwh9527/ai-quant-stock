@@ -139,10 +139,11 @@ class SignalGenerator:
         """生成 MACD 金叉/死叉信号"""
         signals: list[dict] = []
         dates = df.index.tolist()
+        start_ts = pd.Timestamp(start_date)
 
         for i in range(1, len(dates)):
             # 只返回 start_date 之后的信号
-            if dates[i] < start_date:
+            if dates[i] < start_ts:
                 continue
 
             curr_dif = dif.iloc[i]
@@ -188,9 +189,10 @@ class SignalGenerator:
         """生成 KDJ 超买/超卖信号"""
         signals: list[dict] = []
         dates = df.index.tolist()
+        start_ts = pd.Timestamp(start_date)
 
         for i in range(1, len(dates)):
-            if dates[i] < start_date:
+            if dates[i] < start_ts:
                 continue
 
             curr_k = k.iloc[i]
@@ -242,6 +244,7 @@ class SignalGenerator:
             return signals
 
         dates = df.index.tolist()
+        start_ts = pd.Timestamp(start_date)
 
         # 检查相邻周期的均线交叉
         for idx in range(len(ma_names) - 1):
@@ -249,7 +252,7 @@ class SignalGenerator:
             long_ma = ma_dict[ma_names[idx + 1]]
 
             for i in range(1, len(dates)):
-                if dates[i] < start_date:
+                if dates[i] < start_ts:
                     continue
 
                 curr_short = short_ma.iloc[i]

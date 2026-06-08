@@ -8,6 +8,12 @@ import math
 from datetime import date, timedelta
 from typing import Dict, List, Optional
 
+# Monkey-patch Backtrader 兼容新版 pandas（__bool__ 问题）
+import backtrader.lineiterator as _bt_li
+if not getattr(_bt_li.LineSeries, '_original_bool_patched', False):
+    _bt_li.LineSeries.__bool__ = lambda self: True
+    _bt_li.LineSeries._original_bool_patched = True
+
 import backtrader as bt
 import numpy as np
 import pandas as pd
@@ -127,6 +133,13 @@ class BacktestEngine:
             "trades": trades,
         }
 
+    @staticmethod
+    def _safe_round(val, ndigits=2):
+        """安全 round，处理 NaN/None"""
+        if val is None or (isinstance(val, float) and (math.isnan(val) or math.isinf(val))):
+            return 0.0
+        return round(float(val), ndigits)
+
     def _extract_metrics(self, strategy) -> Dict:
         """提取回测指标"""
         final_value = self.cerebro.broker.getvalue()
@@ -142,45 +155,46 @@ class BacktestEngine:
         time_return = strategy.analyzers.timereturn.get_analysis()
 
         # 年化收益率
-        annual_return = returns_analyzer.get("rnorm100", 0)
+        annual_return = returns_analyzer.get("rnorm100", 0) or 0
 
         # 最大回撤
-        max_drawdown = drawdown_analyzer.get("max", {}).get("drawdown", 0) * -1
+        max_drawdown = drawdown_analyzer.get("max", {}).get("drawdown", 0) or 0
+        max_drawdown *= -1
 
         # 夏普比率
         sharpe_ratio = sharpe_analyzer.get("sharperatio", 0) or 0
 
         # 波动率（年化）
+        volatility = 0
         if time_return:
-            daily_returns = list(time_return.values())
-            volatility = float(np.std(daily_returns)) * math.sqrt(252) * 100
-        else:
-            volatility = 0
+            daily_returns = [v for v in time_return.values() if v is not None and not math.isnan(v)]
+            if daily_returns:
+                volatility = float(np.std(daily_returns)) * math.sqrt(252) * 100
 
         # 胜率和交易次数
-        total_trades = trade_analyzer.get("total", {}).get("total", 0)
-        won_trades = trade_analyzer.get("won", {}).get("total", 0)
+        total_trades = trade_analyzer.get("total", {}).get("total", 0) or 0
+        won_trades = trade_analyzer.get("won", {}).get("total", 0) or 0
         win_rate = (won_trades / total_trades * 100) if total_trades > 0 else 0
 
         # 平均持仓天数
         avg_holding_days = self._calc_avg_holding_days(strategy.trades)
 
         # 基准收益率
-        benchmark_return = self._calc_benchmark_return()
+        benchmark_return = self._calc_benchmark_return() or 0
 
         return {
-            "total_return": round(total_return, 2),
-            "annual_return": round(annual_return, 2),
-            "max_drawdown": round(max_drawdown, 2),
-            "sharpe_ratio": round(sharpe_ratio, 2),
-            "volatility": round(volatility, 2),
-            "win_rate": round(win_rate, 2),
-            "trade_count": total_trades,
-            "avg_holding_days": round(avg_holding_days, 1),
-            "benchmark_return": round(benchmark_return, 2),
-            "excess_return": round(total_return - benchmark_return, 2),
+            "total_return": self._safe_round(total_return),
+            "annual_return": self._safe_round(annual_return),
+            "max_drawdown": self._safe_round(max_drawdown),
+            "sharpe_ratio": self._safe_round(sharpe_ratio),
+            "volatility": self._safe_round(volatility),
+            "win_rate": self._safe_round(win_rate),
+            "trade_count": int(total_trades),
+            "avg_holding_days": self._safe_round(avg_holding_days, 1),
+            "benchmark_return": self._safe_round(benchmark_return),
+            "excess_return": self._safe_round(total_return - benchmark_return),
             "initial_capital": self.initial_capital,
-            "final_value": round(final_value, 2),
+            "final_value": self._safe_round(final_value),
         }
 
     def _extract_equity_curve(self, strategy) -> List[Dict]:

@@ -13,11 +13,14 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+import pandas as pd
+
 from app.core.database import get_db
 from app.models.backtest import BacktestResult
+from app.models.daily import DailyQuote
 from app.services.ai import get_ai_service
 from app.services.backtest import BacktestEngine
-from app.services.data import get_data_source, DataCache
+from app.services.data import get_data_source
 
 logger = logging.getLogger(__name__)
 
@@ -52,35 +55,89 @@ def _generate_task_id() -> str:
     return f"backtest_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{short_uuid}"
 
 
-def _get_stock_data(source, ts_code: str, start_date: str, end_date: str):
-    """获取股票日线数据"""
-    try:
-        df = source.get_daily_quotes(
-            ts_code=ts_code,
-            start_date=date.fromisoformat(start_date),
-            end_date=date.fromisoformat(end_date),
+def _get_stock_data(db: Session, ts_code: str, start_date: str, end_date: str):
+    """获取股票日线数据，优先从数据库查询"""
+    start = date.fromisoformat(start_date)
+    end = date.fromisoformat(end_date)
+
+    # 优先从数据库查询
+    rows = (
+        db.query(DailyQuote)
+        .filter(
+            DailyQuote.ts_code == ts_code,
+            DailyQuote.trade_date >= start,
+            DailyQuote.trade_date <= end,
         )
+        .order_by(DailyQuote.trade_date)
+        .all()
+    )
+    if rows:
+        df = pd.DataFrame([
+            {
+                "trade_date": pd.Timestamp(r.trade_date),
+                "open": r.open,
+                "high": r.high,
+                "low": r.low,
+                "close": r.close,
+                "vol": r.vol,
+            }
+            for r in rows
+        ])
+        logger.info(f"从数据库获取 {ts_code} 日线数据: {len(df)} 条")
+        return df
+
+    # 数据库无数据，尝试远程数据源
+    try:
+        source = get_data_source()
+        df = source.get_daily_quotes(ts_code=ts_code, start_date=start, end_date=end)
         if df is not None and not df.empty:
             return df
     except Exception as e:
-        logger.warning(f"获取股票数据失败: {e}")
+        logger.warning(f"远程获取 {ts_code} 数据失败: {e}")
 
-    # 备用：从数据库查询
     return None
 
 
-def _get_benchmark_data(source, benchmark_code: str, start_date: str, end_date: str):
-    """获取基准指数日线数据"""
-    try:
-        df = source.get_daily_quotes(
-            ts_code=benchmark_code,
-            start_date=date.fromisoformat(start_date),
-            end_date=date.fromisoformat(end_date),
+def _get_benchmark_data(db: Session, benchmark_code: str, start_date: str, end_date: str):
+    """获取基准指数日线数据，优先从数据库查询"""
+    start = date.fromisoformat(start_date)
+    end = date.fromisoformat(end_date)
+
+    # 优先从数据库查询
+    rows = (
+        db.query(DailyQuote)
+        .filter(
+            DailyQuote.ts_code == benchmark_code,
+            DailyQuote.trade_date >= start,
+            DailyQuote.trade_date <= end,
         )
+        .order_by(DailyQuote.trade_date)
+        .all()
+    )
+    if rows:
+        df = pd.DataFrame([
+            {
+                "trade_date": pd.Timestamp(r.trade_date),
+                "open": r.open,
+                "high": r.high,
+                "low": r.low,
+                "close": r.close,
+                "vol": r.vol,
+            }
+            for r in rows
+        ])
+        logger.info(f"从数据库获取 {benchmark_code} 数据: {len(df)} 条")
+        return df
+
+    # 数据库无数据，尝试远程数据源
+    try:
+        source = get_data_source()
+        df = source.get_daily_quotes(ts_code=benchmark_code, start_date=start, end_date=end)
         if df is not None and not df.empty:
             return df
     except Exception as e:
-        logger.warning(f"获取基准数据失败: {e}")
+        logger.warning(f"远程获取 {benchmark_code} 数据失败: {e}")
+
     return None
 
 
@@ -106,11 +163,8 @@ async def run_backtest(req: BacktestRunRequest, db: Session = Depends(get_db)):
             # 使用默认 MACD 策略作为回退
             strategy_config = _fallback_strategy(req.strategy_description)
 
-        # 2. 获取股票数据
-        source = get_data_source()
-        cached = DataCache(source)
-
-        stock_df = _get_stock_data(cached, req.ts_code, req.start_date, req.end_date)
+        # 2. 获取股票数据（优先数据库）
+        stock_df = _get_stock_data(db, req.ts_code, req.start_date, req.end_date)
         if stock_df is None or stock_df.empty:
             return {
                 "code": -1,
@@ -118,7 +172,7 @@ async def run_backtest(req: BacktestRunRequest, db: Session = Depends(get_db)):
                 "msg": f"无法获取 {req.ts_code} 的行情数据，请确认股票代码和日期范围",
             }
 
-        benchmark_df = _get_benchmark_data(cached, req.benchmark, req.start_date, req.end_date)
+        benchmark_df = _get_benchmark_data(db, req.benchmark, req.start_date, req.end_date)
 
         # 3. 执行回测
         engine = BacktestEngine(
@@ -278,7 +332,22 @@ def _fallback_strategy(description: str) -> dict:
     """
     desc_lower = description.lower()
 
-    # 尝试识别策略类型
+    # 尝试识别策略类型（macd 必须在 ma 之前匹配，避免子串冲突）
+    if "macd" in desc_lower:
+        return {
+            "name": "MACD 策略",
+            "description": description,
+            "entry_rules": [
+                {"indicator": "macd", "condition": "golden_cross", "params": {"fast": 12, "slow": 26, "signal": 9}}
+            ],
+            "exit_rules": [
+                {"indicator": "macd", "condition": "death_cross", "params": {"fast": 12, "slow": 26, "signal": 9}}
+            ],
+            "position_size": 0.95,
+            "stop_loss": 0.05,
+            "take_profit": 0.1,
+        }
+
     if "kdj" in desc_lower:
         return {
             "name": "KDJ 策略",
@@ -326,7 +395,7 @@ def _fallback_strategy(description: str) -> dict:
 
     # 默认 MACD 策略
     return {
-        "name": "MACD 策略",
+        "name": "默认策略",
         "description": description,
         "entry_rules": [
             {"indicator": "macd", "condition": "golden_cross", "params": {"fast": 12, "slow": 26, "signal": 9}}

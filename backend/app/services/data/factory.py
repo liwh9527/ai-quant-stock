@@ -35,5 +35,10 @@ def get_data_source() -> DataSourceBase:
 
         return AkShareSource()
 
+    elif source_type == "tinyshare":
+        from .tinyshare_source import TinyShareSource
+
+        return TinyShareSource(token=settings.TUSHARE_TOKEN)
+
     else:
-        raise ValueError(f"未知的数据源类型: {source_type}，可选值: tushare, akshare")
+        raise ValueError(f"未知的数据源类型: {source_type}，可选值: tushare, akshare, tinyshare")

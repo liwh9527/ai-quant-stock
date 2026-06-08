@@ -118,6 +118,21 @@ class AkShareSource(DataSourceBase):
         df = df_main.rename(columns=actual_rename)
         df["ts_code"] = ts_code
 
+        # 清理百分号字符串，转为 float
+        pct_fields = [
+            "roe", "roa", "gross_margin", "net_margin",
+            "revenue_yoy", "net_profit_yoy", "debt_ratio",
+        ]
+        for field in pct_fields:
+            if field in df.columns:
+                df[field] = df[field].apply(self._parse_pct)
+
+        # 清理数值字段
+        num_fields = ["pe", "pb", "ps", "current_ratio", "eps", "bvps"]
+        for field in num_fields:
+            if field in df.columns:
+                df[field] = pd.to_numeric(df[field], errors="coerce")
+
         # 日期处理
         if "end_date" in df.columns:
             df["end_date"] = pd.to_datetime(df["end_date"])
@@ -170,6 +185,19 @@ class AkShareSource(DataSourceBase):
 
         logger.info(f"获取指数日线 {ts_code}: {len(df)} 条")
         return df
+
+    @staticmethod
+    def _parse_pct(val) -> float | None:
+        """将百分号字符串转为 float，如 '5.25%' -> 5.25"""
+        if val is None or (isinstance(val, float) and pd.isna(val)):
+            return None
+        s = str(val).strip()
+        if s.endswith("%"):
+            s = s[:-1]
+        try:
+            return float(s)
+        except (ValueError, TypeError):
+            return None
 
     @staticmethod
     def _symbol_to_ts_code(symbol: str) -> str:
