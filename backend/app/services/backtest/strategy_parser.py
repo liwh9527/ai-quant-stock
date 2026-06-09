@@ -41,8 +41,18 @@ class StrategyParser:
         if method not in ('equal', 'tiered', 'risk_parity'):
             raise ValueError(f"不支持的仓位管理方式: {method}")
 
+    def _deep_merge(self, base: Dict, override: Dict) -> Dict:
+        """递归合并字典，override 覆盖 base"""
+        result = {**base}
+        for key, value in override.items():
+            if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+                result[key] = self._deep_merge(result[key], value)
+            else:
+                result[key] = value
+        return result
+
     def _normalize(self, config: Dict) -> Dict:
-        """规范化配置，填充默认值"""
+        """规范化配置，填充默认值（深层合并）"""
         defaults = {
             'name': '未命名策略',
             'version': '1.0',
@@ -51,18 +61,14 @@ class StrategyParser:
             'exit': {'rules': []},
             'risk_control': {
                 'max_positions': 3,
-                'market_timing': {'enabled': False},
-                'consecutive_loss_pause': {'enabled': False}
+                'market_timing': {'enabled': False, 'index': '000001.SH', 'condition': 'close > ma5'},
+                'consecutive_loss_pause': {'enabled': False, 'threshold': 3, 'pause_days': 1}
             },
             'cost': {'commission': 0.0003, 'stamp_tax': 0.001, 'slippage': 0.001},
             'initial_cash': 1000000
         }
 
-        result = {**defaults, **config}
-        for key in ['screening', 'entry', 'exit', 'risk_control', 'cost']:
-            if isinstance(defaults.get(key), dict) and isinstance(config.get(key), dict):
-                result[key] = {**defaults[key], **config[key]}
-        return result
+        return self._deep_merge(defaults, config)
 
     def get_builtin_templates(self) -> Dict[str, Dict]:
         """获取内置策略模板"""
