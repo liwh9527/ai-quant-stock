@@ -1,0 +1,60 @@
+{
+  "watchlist": [
+    {
+      "code": "002916.SZ",
+      "name": "深南电路",
+      "theme": "PCB",
+      "reason": "PCB龙头，服务器/交换机需求受益"
+    },
+    {
+      "code": "600487.SH",
+      "name": "亨通光电",
+      "theme": "光纤光缆",
+      "reason": "光纤光缆龙头，AI算力需求受益"
+    },
+    {
+      "code": "002156.SZ",
+      "name": "通富微电",
+      "theme": "封装测试",
+      "reason": "先进封装，AI芯片封装需求"
+    },
+    {
+      "code": "002837.SZ",
+      "name": "英维克",
+      "theme": "液冷设备",
+      "reason": "液冷散热设备，AI服务器需求"
+    },
+    {
+      "code": "002747.SZ",
+      "name": "埃斯顿",
+      "theme": "人形机器人",
+      "reason": "工业机器人+伺服电机"
+    },
+    {
+      "code": "002230.SZ",
+      "name": "科大飞",
+      "theme": "AI大模型",
+      "reason": "AI应用龙头，语音识别"
+    }
+  ],
+  "strategy": {
+    "name": "MA20最优策略",
+    "ma_period": 20,
+    "vol_threshold": 1.2,
+    "atr_filter": true,
+    "deviation_threshold": 1.0,
+    "stop_loss": 0.05,
+    "position_size": 0.95
+  },
+  "notification": {
+    "enabled": true,
+    "channels": ["qq", "feishu"],
+    "signal_types": ["BUY", "SELL"],
+    "min_strength": 3
+  },
+  "schedule": {
+    "check_time": "15:30",
+    "timezone": "Asia/Shanghai",
+    "trading_days_only": true
+  }
+}
