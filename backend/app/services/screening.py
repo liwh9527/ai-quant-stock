@@ -121,7 +121,6 @@ class ScreeningService:
         Returns:
             包含 list、total、page、page_size 的字典
         """
-        # 构建基础查询：关联 Stock、FinancialIndicator、最新 DailyQuote
         # 子查询：获取每只股票最新的财务指标
         latest_fin_subq = (
             self.db.query(
@@ -132,7 +131,7 @@ class ScreeningService:
             .subquery()
         )
 
-        # 子查询：获取每只股票最新的日线行情
+        # 子查询：获取每只股票最新的日线行情（直接包含 close 和 pct_chg）
         latest_daily_subq = (
             self.db.query(
                 DailyQuote.ts_code,
@@ -142,7 +141,7 @@ class ScreeningService:
             .subquery()
         )
 
-        # 主查询
+        # 主查询：使用子查询关联，避免重复
         query = (
             self.db.query(
                 Stock.ts_code,
@@ -168,12 +167,18 @@ class ScreeningService:
                 (FinancialIndicator.ts_code == latest_fin_subq.c.ts_code)
                 & (FinancialIndicator.end_date == latest_fin_subq.c.max_end_date),
             )
-            .outerjoin(DailyQuote, Stock.ts_code == DailyQuote.ts_code)
             .outerjoin(
                 latest_daily_subq,
+                Stock.ts_code == latest_daily_subq.c.ts_code,
+            )
+            .outerjoin(
+                DailyQuote,
                 (DailyQuote.ts_code == latest_daily_subq.c.ts_code)
                 & (DailyQuote.trade_date == latest_daily_subq.c.max_trade_date),
             )
+            # 过滤无效数据
+            .filter(FinancialIndicator.pe > 0)
+            .filter(FinancialIndicator.pe < 1000)
         )
 
         # 应用行业筛选

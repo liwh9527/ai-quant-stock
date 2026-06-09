@@ -81,6 +81,9 @@ class BacktestEngine:
         # 设置滑点
         self.cerebro.broker.set_slippage_perc(self.slippage)
 
+        # 启用收盘价执行模式（当天信号，当天收盘价执行）
+        self.cerebro.broker.set_coc(True)
+
         # 添加印花税（卖出千一）
         self.cerebro.addanalyzer(bt.analyzers.TradeAnalyzer, _name="trades")
         self.cerebro.addanalyzer(bt.analyzers.Returns, _name="returns")

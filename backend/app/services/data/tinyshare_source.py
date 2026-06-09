@@ -49,6 +49,9 @@ class TinyShareSource(DataSourceBase):
         if "trade_date" in df.columns:
             df["trade_date"] = pd.to_datetime(df["trade_date"])
 
+        # 按日期升序排列（tinyshare 返回的是倒序）
+        df = df.sort_values("trade_date").reset_index(drop=True)
+
         logger.info(f"获取日线行情 {ts_code}: {len(df)} 条")
         return df
 
@@ -118,6 +121,9 @@ class TinyShareSource(DataSourceBase):
 
         if "trade_date" in df.columns:
             df["trade_date"] = pd.to_datetime(df["trade_date"])
+
+        # 按日期升序排列
+        df = df.sort_values("trade_date").reset_index(drop=True)
 
         df["ts_code"] = ts_code
         logger.info(f"获取指数日线 {ts_code}: {len(df)} 条")

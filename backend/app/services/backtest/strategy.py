@@ -30,6 +30,7 @@ class AIStrategy(bt.Strategy):
         self.buy_price = None
         self.buy_date = None
         self.trades: List[Dict] = []  # 记录交易
+        self._cooldown_until = None  # 止损/止盈后的冷却期
 
         # 指标容器
         self._entry_indicators = []
@@ -181,11 +182,17 @@ class AIStrategy(bt.Strategy):
             return
 
         # 检查止损止盈（已持仓时）
-        if self.position:
+        if self.position.size > 0:
             self._check_stop_loss_take_profit()
+            # 如果止损/止盈触发了订单，跳过后续检查
+            if self.order:
+                return
 
         # 未持仓 -> 检查入场条件
-        if not self.position:
+        if self.position.size == 0:
+            # 止损/止盈后需要冷却期，避免反复买卖
+            if self._cooldown_until and self.data.datetime.date(0) < self._cooldown_until:
+                return
             if self._check_entry():
                 # 按仓位比例计算买入数量
                 cash = self.broker.getcash()
@@ -195,7 +202,7 @@ class AIStrategy(bt.Strategy):
                     self.order = self.buy(size=size)
                     self.buy_price = self.data.close[0]
                     self.buy_date = self.data.datetime.date(0)
-        else:
+        elif self.position.size > 0:
             # 已持仓 -> 检查出场条件
             if self._check_exit():
                 self.order = self.sell(size=self.position.size)
@@ -220,9 +227,10 @@ class AIStrategy(bt.Strategy):
 
     def _check_stop_loss_take_profit(self):
         """检查止损止盈"""
-        if not self.buy_price or not self.position:
+        if not self.buy_price or not self.position.size > 0:
             return
 
+        from datetime import timedelta
         current_price = self.data.close[0]
         pnl_pct = (current_price - self.buy_price) / self.buy_price
 
@@ -233,6 +241,7 @@ class AIStrategy(bt.Strategy):
                 f"当前价 {current_price:.2f}, 亏损 {pnl_pct:.2%}"
             )
             self.order = self.sell(size=self.position.size)
+            self._cooldown_until = self.data.datetime.date(0) + timedelta(days=5)
             return
 
         # 止盈
@@ -242,6 +251,7 @@ class AIStrategy(bt.Strategy):
                 f"当前价 {current_price:.2f}, 盈利 {pnl_pct:.2%}"
             )
             self.order = self.sell(size=self.position.size)
+            self._cooldown_until = self.data.datetime.date(0) + timedelta(days=3)
 
     def notify_order(self, order):
         """订单状态回调"""
