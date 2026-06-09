@@ -42,30 +42,30 @@ class OrderManager:
     def execute_pending(self, date: str, open_prices: Dict[str, float],
                         close_prices: Dict[str, float]) -> List[Order]:
         """执行待处理订单
-        买入：T+1日生效，用开盘价
-        卖出：当日执行，用收盘价
+        买入：当日执行，用开盘价（竞价买入）
+        卖出：当日执行，用收盘价（T+1 规则：买入当天不能卖出）
         """
         executed = []
         remaining = []
 
         for order in self.pending_orders:
             if order.action == Order.BUY:
-                # 买入需要 T+1：订单日期 < 当前日期才执行
+                # 买入当日执行（竞价买入）
+                price = open_prices.get(order.ts_code, order.price)
+                order.execute_price = price
+                order.execute_date = date
+                order.executed = True
+                executed.append(order)
+            elif order.action == Order.SELL:
+                # T+1：卖出订单的日期必须早于执行日期
                 if date > order.date:
-                    price = open_prices.get(order.ts_code, order.price)
+                    price = close_prices.get(order.ts_code, order.price)
                     order.execute_price = price
                     order.execute_date = date
                     order.executed = True
                     executed.append(order)
                 else:
                     remaining.append(order)
-            elif order.action == Order.SELL:
-                # 卖出当日执行
-                price = close_prices.get(order.ts_code, order.price)
-                order.execute_price = price
-                order.execute_date = date
-                order.executed = True
-                executed.append(order)
 
         self.pending_orders = remaining
         self.executed_orders.extend(executed)

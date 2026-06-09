@@ -52,16 +52,18 @@ class PortfolioBacktestEngine:
         for date in trade_dates:
             # 1. 大盘择时
             if not self._check_market_timing(config, date):
-                self.portfolio.daily_update(date, self._get_current_prices(date))
+                prices = self._get_position_prices(date)
+                self.portfolio.daily_update(date, prices)
                 continue
 
-            # 2. 风控检查
+            # 2. 风控检查（连亏暂停）
             if not self._check_risk_control(config, date):
-                self.portfolio.daily_update(date, self._get_current_prices(date))
+                prices = self._get_position_prices(date)
+                self.portfolio.daily_update(date, prices)
                 continue
 
-            # 3. 获取当日价格
-            open_prices, close_prices = self._get_prices(date)
+            # 3. 获取当日开收盘价（只查持仓+候选股票，非全市场）
+            open_prices, close_prices = self._get_relevant_prices(date, config)
 
             # 4. 执行待处理订单
             executed = self.order_mgr.execute_pending(date, open_prices, close_prices)
@@ -71,23 +73,49 @@ class PortfolioBacktestEngine:
                     price = order.execute_price
                     self.portfolio.buy(order.ts_code, price, shares, date, commission)
                     self.result.trades.append({
-                        'date': date, 'ts_code': order.ts_code,
-                        'action': 'BUY', 'price': price, 'shares': shares,
-                        'reason': order.reason
+                        'date': date, 'ts_code': order.ts_code, 'name': order.reason,
+                        'action': 'BUY', 'price': round(price, 2), 'shares': shares,
+                        'reason': '选股买入'
                     })
                 elif order.action == Order.SELL:
                     price = order.execute_price
+                    old_pos = self.portfolio.get_position(order.ts_code)
+                    buy_price = old_pos.buy_price if old_pos else price
                     self.portfolio.sell(order.ts_code, price, order.shares, date, commission, stamp_tax)
+                    pnl_pct = (price - buy_price) / buy_price if buy_price else 0
+                    # 更新连亏计数
+                    if pnl_pct < 0:
+                        self.consecutive_losses += 1
+                    else:
+                        self.consecutive_losses = 0
                     self.result.trades.append({
                         'date': date, 'ts_code': order.ts_code,
-                        'action': 'SELL', 'price': price, 'shares': order.shares,
-                        'reason': order.reason
+                        'action': 'SELL', 'price': round(price, 2), 'shares': order.shares,
+                        'reason': order.reason, 'pnl_pct': round(pnl_pct, 4)
                     })
 
-            # 5. 持仓检查（止损/断板）
+            # 5. 持仓检查（止损/断板）— 用收盘价判断
             self._check_positions(config, date, close_prices, commission, stamp_tax)
 
-            # 6. 每日选股 + 生成买入订单
+            # 5.5 立即执行刚生成的卖出订单
+            sell_executed = self.order_mgr.execute_pending(date, open_prices, close_prices)
+            for order in sell_executed:
+                if order.action == Order.SELL:
+                    old_pos = self.portfolio.get_position(order.ts_code)
+                    buy_price = old_pos.buy_price if old_pos else order.execute_price
+                    self.portfolio.sell(order.ts_code, order.execute_price, order.shares, date, commission, stamp_tax)
+                    pnl_pct = (order.execute_price - buy_price) / buy_price if buy_price else 0
+                    if pnl_pct < 0:
+                        self.consecutive_losses += 1
+                    else:
+                        self.consecutive_losses = 0
+                    self.result.trades.append({
+                        'date': date, 'ts_code': order.ts_code,
+                        'action': 'SELL', 'price': round(order.execute_price, 2), 'shares': order.shares,
+                        'reason': order.reason, 'pnl_pct': round(pnl_pct, 4)
+                    })
+
+            # 6. 每日选股 + 生成买入订单（用开盘价买入）
             risk_cfg = config.get('risk_control', {})
             max_pos = risk_cfg.get('max_positions', 3)
             available_slots = max_pos - self.portfolio.position_count()
@@ -102,18 +130,20 @@ class PortfolioBacktestEngine:
 
                 entry_cfg = config.get('entry', {})
                 sizing = entry_cfg.get('position_sizing', {'method': 'equal'})
+                total_value = self.portfolio.total_value(close_prices)
 
                 for stock in candidates[:available_slots]:
                     ts_code = stock.get('ts_code')
                     if ts_code and not self.portfolio.has_position(ts_code):
-                        price = close_prices.get(ts_code, 0)
+                        # 买入价用开盘价
+                        price = open_prices.get(ts_code, 0)
                         if price > 0:
-                            shares = self._calc_shares(price, sizing, stock, initial_cash, max_pos)
+                            shares = self._calc_shares(price, sizing, stock, total_value, max_pos)
                             if shares > 0 and self.portfolio.can_buy(price, shares, commission):
                                 self.order_mgr.add_order(Order(
                                     ts_code=ts_code, action=Order.BUY,
                                     price=price, shares=shares,
-                                    reason='选股买入', date=date
+                                    reason=stock.get('name', ts_code), date=date
                                 ))
 
             # 7. 更新净值
@@ -134,15 +164,13 @@ class PortfolioBacktestEngine:
         index_code = timing_cfg.get('index', '000001.SH')
         condition = timing_cfg.get('condition', 'close > ma5')
 
-        # 获取指数数据
         end_date = date
         start_date = (datetime.strptime(date, '%Y%m%d') - timedelta(days=30)).strftime('%Y%m%d')
         index_data = self.dm.get_index_daily(index_code, start_date, end_date)
 
         if not index_data or len(index_data) < 5:
-            return True  # 数据不足时默认通过
+            return True
 
-        # 计算 MA5
         closes = [d['close'] for d in index_data[-5:]]
         ma5 = sum(closes) / len(closes)
         current_close = index_data[-1]['close']
@@ -152,7 +180,7 @@ class PortfolioBacktestEngine:
         return True
 
     def _check_risk_control(self, config: Dict, date: str) -> bool:
-        """风控检查"""
+        """风控检查：连亏暂停"""
         risk_cfg = config.get('risk_control', {})
         pause_cfg = risk_cfg.get('consecutive_loss_pause', {})
         if not pause_cfg.get('enabled', False):
@@ -160,6 +188,8 @@ class PortfolioBacktestEngine:
 
         threshold = pause_cfg.get('threshold', 3)
         if self.consecutive_losses >= threshold:
+            # 暂停一天后重置
+            self.consecutive_losses = 0
             return False
         return True
 
@@ -170,62 +200,83 @@ class PortfolioBacktestEngine:
         rules = exit_cfg.get('rules', [])
 
         for ts_code, pos in list(self.portfolio.positions.items()):
+            # T+1：买入当天不能卖出
+            if pos.hold_days < 1:
+                continue
+
             current_price = prices.get(ts_code, pos.buy_price)
 
             for rule in rules:
                 if rule.get('type') == 'stop_loss':
                     pct = rule.get('pct', -0.05)
-                    if pos.profit_pct(current_price) <= pct:
+                    stop_price = pos.buy_price * (1 + pct)
+                    # 用当日最低价判断是否触发止损
+                    day_data = self.dm.get_stock_price_on_date(ts_code, date)
+                    low_price = day_data.get('low', current_price) if day_data else current_price
+                    if low_price <= stop_price:
                         self.order_mgr.add_order(Order(
                             ts_code=ts_code, action=Order.SELL,
-                            price=current_price, shares=pos.shares,
-                            reason=f'止损 {pos.profit_pct(current_price):.1%}',
+                            price=stop_price, shares=pos.shares,
+                            reason=f'止损 {pct:.0%}',
                             date=date
                         ))
                         break
 
                 elif rule.get('type') == 'break_limit_up':
-                    # 断板：前一日涨停但今日不涨停
-                    if pos.hold_days >= 1:
-                        is_limit = self.dm.check_limit_up(ts_code, date)
-                        if not is_limit:
-                            self.order_mgr.add_order(Order(
-                                ts_code=ts_code, action=Order.SELL,
-                                price=current_price, shares=pos.shares,
-                                reason='断板卖出', date=date
-                            ))
-                            break
+                    is_limit = self.dm.check_limit_up(ts_code, date)
+                    if not is_limit:
+                        self.order_mgr.add_order(Order(
+                            ts_code=ts_code, action=Order.SELL,
+                            price=current_price, shares=pos.shares,
+                            reason='断板卖出', date=date
+                        ))
+                        break
 
     def _calc_shares(self, price: float, sizing: Dict, stock: Dict,
-                     initial_cash: float, max_pos: int) -> int:
+                     total_value: float, max_pos: int) -> int:
         """计算买入股数"""
         method = sizing.get('method', 'equal')
 
         if method == 'equal':
-            amount = initial_cash / max_pos
+            amount = total_value / max_pos
         elif method == 'tiered':
+            # 分级仓位：根据竞价涨幅分配比例
             tiers = sizing.get('tiers', [])
-            ratio = 1.0 / max_pos
+            auction_pct = stock.get('auction_pct', 0)
+            ratio = 1.0 / max_pos  # 默认等权
             for tier in tiers:
-                # 简化处理：默认用等权
-                pass
-            amount = initial_cash * ratio / max_pos
+                min_pct = tier.get('min_auction_pct', 0)
+                if auction_pct >= min_pct:
+                    ratio = tier.get('ratio', ratio)
+                    break
+            amount = total_value * ratio
         else:
-            amount = initial_cash / max_pos
+            amount = total_value / max_pos
 
-        shares = int(amount / price / 100) * 100  # 取整到100股
+        shares = int(amount / price / 100) * 100
         return shares
 
-    def _get_prices(self, date: str):
-        """获取当日开收盘价"""
-        stocks = self.dm.get_all_stocks()
-        codes = [s['ts_code'] for s in stocks]
-        daily = self.dm.get_daily_for_date(codes, date)
+    def _get_relevant_prices(self, date: str, config: Dict):
+        """获取相关股票的开收盘价（持仓+候选，非全市场）"""
+        # 获取持仓股票代码
+        position_codes = list(self.portfolio.positions.keys())
+
+        # 获取候选股票代码（从选股条件推断）
+        screening_cfg = config.get('screening', {})
+        candidates = self.screening.screen(date, screening_cfg, self.dm)
+        candidate_codes = [c.get('ts_code') for c in candidates[:20]]
+
+        # 合并去重
+        all_codes = list(set(position_codes + candidate_codes))
+        if not all_codes:
+            return {}, {}
+
+        daily = self.dm.get_daily_for_date(all_codes, date)
         open_prices = {k: v.get('open', 0) for k, v in daily.items()}
         close_prices = {k: v.get('close', 0) for k, v in daily.items()}
         return open_prices, close_prices
 
-    def _get_current_prices(self, date: str) -> Dict[str, float]:
+    def _get_position_prices(self, date: str) -> Dict[str, float]:
         """获取当前持仓股票的价格"""
         prices = {}
         for ts_code in self.portfolio.positions:
@@ -257,7 +308,7 @@ class PortfolioBacktestEngine:
             if dd > max_dd:
                 max_dd = dd
 
-        # 夏普比率（简化）
+        # 夏普比率
         if len(values) > 1:
             daily_returns = [(values[i] - values[i-1]) / values[i-1] for i in range(1, len(values))]
             avg_ret = sum(daily_returns) / len(daily_returns)

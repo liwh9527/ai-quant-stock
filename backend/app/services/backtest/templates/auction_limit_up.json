@@ -1,30 +1,17 @@
 {
   "name": "竞价涨停连板策略",
   "version": "1.0",
-  "description": "每日从涨停股中筛选竞价涨幅最高的买入，断板卖出",
+  "description": "昨日涨停+竞价涨幅>3%+主板非ST+市值<200亿+成交额>5亿+股价<50，按竞价涨幅排名买入，连板持有，断板卖出",
   "screening": {
-    "universe": "all",
+    "universe": "主板",
     "conditions": [
-      {
-        "field": "prev_limit_up",
-        "op": "==",
-        "value": true
-      },
-      {
-        "field": "circ_mv",
-        "op": "<",
-        "value": 2000000
-      },
-      {
-        "field": "close",
-        "op": "<",
-        "value": 50
-      }
+      {"field": "prev_limit_up", "op": "==", "value": true},
+      {"field": "auction_pct", "op": ">", "value": 0.03},
+      {"field": "circ_mv", "op": "<", "value": 2000000},
+      {"field": "amount", "op": ">", "value": 500000},
+      {"field": "close", "op": "<", "value": 50}
     ],
-    "sort": {
-      "field": "auction_pct",
-      "order": "desc"
-    },
+    "sort": {"field": "auction_pct", "order": "desc"},
     "limit": 3
   },
   "entry": {
@@ -35,34 +22,19 @@
   },
   "exit": {
     "rules": [
-      {
-        "type": "break_limit_up",
-        "action": "sell_at_close"
-      },
-      {
-        "type": "stop_loss",
-        "pct": -0.05,
-        "action": "sell_immediate"
-      }
+      {"type": "break_limit_up", "action": "sell_at_close"},
+      {"type": "stop_loss", "pct": -0.05, "action": "sell_immediate"}
     ]
   },
   "risk_control": {
     "max_positions": 3,
-    "market_timing": {
-      "enabled": true,
-      "index": "000001.SH",
-      "condition": "close > ma5"
-    },
-    "consecutive_loss_pause": {
-      "enabled": true,
-      "threshold": 3,
-      "pause_days": 1
-    }
+    "market_timing": {"enabled": false},
+    "consecutive_loss_pause": {"enabled": false}
   },
   "cost": {
     "commission": 0.0003,
     "stamp_tax": 0.001,
     "slippage": 0.001
   },
-  "initial_cash": 1000000
+  "initial_cash": 100000
 }

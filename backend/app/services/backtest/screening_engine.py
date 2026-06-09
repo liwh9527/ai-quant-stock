@@ -83,10 +83,13 @@ class DailyScreeningEngine:
             on='ts_code', how='left'
         )
 
-        # 每日指标
+        # 每日指标（turnover_rate_f 为自由流通换手率，更准确）
         basic = data_manager.get_daily_basic(codes, date)
         if basic:
             basic_df = pd.DataFrame(basic.values())
+            # 优先用 turnover_rate_f（自由流通换手率）
+            if 'turnover_rate_f' in basic_df.columns:
+                basic_df['turnover_rate'] = basic_df['turnover_rate_f'].fillna(basic_df.get('turnover_rate'))
             cols = ['ts_code'] + [c for c in ['turnover_rate', 'circ_mv', 'pe', 'pb', 'ps']
                                   if c in basic_df.columns]
             merged = merged.merge(basic_df[cols], on='ts_code', how='left')
