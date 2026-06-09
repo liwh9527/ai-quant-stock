@@ -1,0 +1,46 @@
+{
+  "name": "MA20+偏离度>1%",
+  "description": "MA20趋势策略 + 价格偏离度过滤（最高收益）",
+  "version": "1.0.0",
+  "created_at": "2026-06-09",
+  "strategy_type": "trend_following",
+  "parameters": {
+    "ma_period": 20,
+    "position_size": 0.95
+  },
+  "entry_rules": [
+    {
+      "indicator": "ma",
+      "condition": "above",
+      "params": {"period": 20}
+    }
+  ],
+  "exit_rules": [
+    {
+      "indicator": "ma",
+      "condition": "below",
+      "params": {"period": 20}
+    }
+  ],
+  "risk_management": {
+    "stop_loss": 0,
+    "take_profit": 0
+  },
+  "filters": {
+    "deviation": {
+      "enabled": true,
+      "type": "price_deviation",
+      "threshold": 0.01,
+      "description": "价格偏离MA20 > 1%（避免假突破）"
+    }
+  },
+  "backtest_result": {
+    "total_return": 291.58,
+    "max_drawdown": -31.25,
+    "win_rate": 33.3,
+    "trade_count": 43,
+    "avg_holding_days": 24.7,
+    "return_drawdown_ratio": 9.33
+  },
+  "use_case": "适合追求最高绝对收益的投资者"
+}

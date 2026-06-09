@@ -1,0 +1,51 @@
+{
+  "name": "MA20+成交量+ATR",
+  "description": "MA20趋势策略 + 成交量确认 + ATR过滤（最佳胜率）",
+  "version": "1.0.0",
+  "created_at": "2026-06-09",
+  "strategy_type": "trend_following",
+  "parameters": {
+    "ma_period": 20,
+    "position_size": 0.95
+  },
+  "entry_rules": [
+    {
+      "indicator": "ma",
+      "condition": "above",
+      "params": {"period": 20}
+    }
+  ],
+  "exit_rules": [
+    {
+      "indicator": "ma",
+      "condition": "below",
+      "params": {"period": 20}
+    }
+  ],
+  "risk_management": {
+    "stop_loss": 0,
+    "take_profit": 0
+  },
+  "filters": {
+    "volume": {
+      "enabled": true,
+      "type": "volume_ratio",
+      "threshold": 1.2,
+      "description": "当日成交量 > 20日均量 * 1.2"
+    },
+    "volatility": {
+      "enabled": true,
+      "type": "atr",
+      "description": "ATR > 20日ATR均值（过滤低波动期）"
+    }
+  },
+  "backtest_result": {
+    "total_return": 238.24,
+    "max_drawdown": -26.33,
+    "win_rate": 60.0,
+    "trade_count": 21,
+    "avg_holding_days": 37.1,
+    "return_drawdown_ratio": 9.05
+  },
+  "use_case": "适合追求高胜率、减少交易频率的投资者"
+}

@@ -1,0 +1,61 @@
+{
+  "name": "MA20最优策略",
+  "description": "MA20趋势策略 + 全部过滤条件 + 5%止损（综合最优）",
+  "version": "1.0.0",
+  "created_at": "2026-06-09",
+  "strategy_type": "trend_following",
+  "parameters": {
+    "ma_period": 20,
+    "position_size": 0.95
+  },
+  "entry_rules": [
+    {
+      "indicator": "ma",
+      "condition": "above",
+      "params": {"period": 20}
+    }
+  ],
+  "exit_rules": [
+    {
+      "indicator": "ma",
+      "condition": "below",
+      "params": {"period": 20}
+    }
+  ],
+  "risk_management": {
+    "stop_loss": 0.05,
+    "take_profit": 0
+  },
+  "filters": {
+    "volume": {
+      "enabled": true,
+      "type": "volume_ratio",
+      "threshold": 1.2,
+      "description": "当日成交量 > 20日均量 * 1.2"
+    },
+    "volatility": {
+      "enabled": true,
+      "type": "atr",
+      "description": "ATR > 20日ATR均值（过滤低波动期）"
+    },
+    "deviation": {
+      "enabled": true,
+      "type": "price_deviation",
+      "threshold": 0.01,
+      "description": "价格偏离MA20 > 1%（避免假突破）"
+    }
+  },
+  "backtest_result": {
+    "total_return": 254.91,
+    "max_drawdown": -22.94,
+    "win_rate": 54.5,
+    "trade_count": 23,
+    "avg_holding_days": 33.5,
+    "return_drawdown_ratio": 11.11
+  },
+  "improvement_vs_basic": {
+    "drawdown_improvement": 7.47,
+    "win_rate_improvement": 23.7,
+    "trade_reduction": 30
+  }
+}
