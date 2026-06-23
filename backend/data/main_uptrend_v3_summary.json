@@ -1,0 +1,30 @@
+{
+  "strategy": "main_uptrend_v3_optimized",
+  "params": {
+    "max_positions": 4,
+    "position_pct": 0.15,
+    "momentum_threshold": 0.3,
+    "volume_ratio": 1.8,
+    "trailing_stop": 0.05,
+    "circuit_breaker": 0.08,
+    "rebalance_days": 5,
+    "min_score": 0.65,
+    "min_pe": -5,
+    "max_pe": 120,
+    "min_roe": 3,
+    "min_revenue_growth": -5,
+    "exclude_st": true,
+    "min_market_cap": 30,
+    "technical_weight": 0.8,
+    "fundamental_weight": 0.2
+  },
+  "result": {
+    "total_return": 5.74948978020003,
+    "annual_return": 0.4410398450140096,
+    "max_drawdown": 0.440213143310208,
+    "sharpe": 1.0901202548388214,
+    "final_value": 6749489.780200031
+  },
+  "target_met": false,
+  "total_time": 101.46663427352905
+}

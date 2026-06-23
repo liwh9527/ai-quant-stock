@@ -1,0 +1,12 @@
+{
+  "strategy": "v14 修复未来函数",
+  "initial_cash": 1000000,
+  "final_value": 940847.2472500001,
+  "total_return": -0.05915275274999987,
+  "annual_return": -0.01159930253365049,
+  "max_drawdown": 0.07765521627899998,
+  "sharpe": -0.47186684555938074,
+  "trade_count": 24,
+  "win_rate": 0.3333333333333333,
+  "days": 1317
+}

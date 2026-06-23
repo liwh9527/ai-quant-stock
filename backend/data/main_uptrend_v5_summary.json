@@ -1,0 +1,57 @@
+{
+  "strategy": "main_uptrend_v5_balanced",
+  "params": {
+    "max_positions": 5,
+    "position_pct": 0.15,
+    "momentum_threshold": 0.4,
+    "volume_ratio": 1.5,
+    "trailing_stop": 0.04,
+    "circuit_breaker": 0.06,
+    "rebalance_days": 3,
+    "min_score": 0.6,
+    "min_pe": -10,
+    "max_pe": 150,
+    "min_roe": 3,
+    "min_revenue_growth": -10,
+    "min_profit_growth": -10,
+    "exclude_st": true,
+    "min_market_cap": 20,
+    "allowed_sectors": [
+      "\u5149\u6a21\u5757",
+      "\u534a\u5bfc\u4f53",
+      "\u65b0\u80fd\u6e90",
+      "\u4eba\u5de5\u667a\u80fd",
+      "\u673a\u5668\u4eba",
+      "\u519b\u5de5",
+      "\u533b\u836f\u751f\u7269",
+      "\u65b0\u6750\u6599",
+      "\u7535\u5b50",
+      "\u8ba1\u7b97\u673a",
+      "\u901a\u4fe1",
+      "\u7535\u529b\u8bbe\u5907"
+    ],
+    "sector_weight": 0.05,
+    "momentum_periods": [
+      5,
+      10,
+      20
+    ],
+    "momentum_consistency": 0.6,
+    "breakout_confirmation": true,
+    "breakout_days": 2,
+    "max_volatility": 0.4,
+    "max_drawdown_limit": 0.3,
+    "trend_confirmation_days": 2,
+    "technical_weight": 0.8,
+    "fundamental_weight": 0.15
+  },
+  "result": {
+    "total_return": 0.02938261240000767,
+    "annual_return": 0.005556552065303144,
+    "max_drawdown": 0.27779775527741335,
+    "sharpe": 0.16359701672093105,
+    "final_value": 1029382.6124000077
+  },
+  "target_met": false,
+  "total_time": 45.81746029853821
+}

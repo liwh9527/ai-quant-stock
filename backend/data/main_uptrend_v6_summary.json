@@ -1,0 +1,23 @@
+{
+  "strategy": "main_uptrend_v6_simplified",
+  "params": {
+    "max_positions": 5,
+    "position_pct": 0.15,
+    "momentum_threshold": 0.4,
+    "volume_ratio": 1.5,
+    "trailing_stop": 0.04,
+    "circuit_breaker": 0.06,
+    "rebalance_days": 3,
+    "min_score": 0.6,
+    "momentum_consistency": 0.6,
+    "max_volatility": 0.4
+  },
+  "result": {
+    "total_return": 0.5096075132000039,
+    "annual_return": 0.081993261360364,
+    "max_drawdown": 0.21364120147784763,
+    "sharpe": 0.46538437881681194,
+    "final_value": 1509607.513200004
+  },
+  "total_time": 40.72335243225098
+}

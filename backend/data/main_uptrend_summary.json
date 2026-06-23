@@ -1,0 +1,24 @@
+{
+  "strategy": "main_uptrend_concentrated",
+  "params": {
+    "max_positions": 3,
+    "position_pct": 0.3,
+    "momentum_threshold": 0.3,
+    "volume_ratio": 1.5,
+    "trailing_stop": 0.08,
+    "ma_stop": true,
+    "rebalance_days": 5,
+    "circuit_breaker": 0.15
+  },
+  "result": {
+    "total_return": 8.112136499300023,
+    "annual_return": 0.526221389625676,
+    "max_drawdown": 0.4097734693856754,
+    "sharpe": 0.9443209306187074,
+    "final_value": 9112136.499300024,
+    "total_trades": 900,
+    "win_rate": 0.4411111111111111
+  },
+  "target_met": false,
+  "total_time": 40.87902522087097
+}

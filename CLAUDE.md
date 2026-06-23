@@ -8,7 +8,7 @@ A 股量化选股 Web 工具，详细需求和技术方案见 `project-brief.md`
 - 后端：Python 3.11+ + FastAPI + SQLAlchemy + SQLite
 - 回测：Backtrader + 自研适配层
 - AI：DeepSeek API（主）/ 通义千问（备）
-- 数据源：Tushare（主）/ AkShare / 东财（备）
+- 数据源：腾讯实时行情（qt.gtimg.cn）/ baostock历史数据
 
 ## 开发规范
 

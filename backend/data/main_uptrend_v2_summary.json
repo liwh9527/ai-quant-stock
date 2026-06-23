@@ -1,0 +1,28 @@
+{
+  "strategy": "main_uptrend_v2_with_fundamental",
+  "params": {
+    "max_positions": 4,
+    "position_pct": 0.15,
+    "momentum_threshold": 0.3,
+    "volume_ratio": 1.8,
+    "trailing_stop": 0.05,
+    "circuit_breaker": 0.08,
+    "rebalance_days": 5,
+    "min_score": 0.7,
+    "min_pe": 0,
+    "max_pe": 100,
+    "min_roe": 5,
+    "min_revenue_growth": 0,
+    "exclude_st": true,
+    "min_market_cap": 50
+  },
+  "result": {
+    "total_return": 2.33158008950002,
+    "annual_return": 0.25894272317875044,
+    "max_drawdown": 0.3682300943800223,
+    "sharpe": 0.8818755999344243,
+    "final_value": 3331580.0895000203
+  },
+  "target_met": false,
+  "total_time": 88.84033346176147
+}

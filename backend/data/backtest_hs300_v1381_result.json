@@ -1,0 +1,30 @@
+{
+  "strategy": "主升浪优化版#1381 (沪深300, 动量20%)",
+  "initial_cash": 1000000,
+  "final_value": 1289146.0,
+  "total_return": 0.289146,
+  "annual_return": 0.04979776067086572,
+  "max_drawdown": 0.0985427383399803,
+  "sharpe": 0.6492877331078675,
+  "trade_count": 125,
+  "days": 1317,
+  "config": {
+    "ma_period": 20,
+    "atr_period": 14,
+    "volume_ratio": 1.5,
+    "atr_threshold": 0.02,
+    "max_deviation": 0.1,
+    "take_profit_pct": 0.4,
+    "trailing_stop_pct": 0.05,
+    "atr_stop_multiplier": 1.5,
+    "chandelier_atr_mult": 3,
+    "max_positions": 4,
+    "position_pct_high": 0.25,
+    "position_pct_low": 0.18,
+    "adx_threshold": 15,
+    "momentum_threshold": 0.2,
+    "cooldown_days": 3,
+    "portfolio_drawdown_stop": 0.1
+  },
+  "stock_pool": "沪深300 (20只)"
+}

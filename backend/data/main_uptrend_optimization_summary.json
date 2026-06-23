@@ -1,0 +1,192 @@
+{
+  "total_combinations": 2187,
+  "valid_count": 12,
+  "target": {
+    "max_drawdown": 0.25,
+    "min_total_return": 4.0,
+    "min_sharpe": 0.8
+  },
+  "best_results": [
+    [
+      {
+        "max_positions": 5,
+        "position_pct": 0.15,
+        "momentum_threshold": 0.4,
+        "volume_ratio": 1.5,
+        "trailing_stop": 0.05,
+        "circuit_breaker": 0.08,
+        "rebalance_days": 5
+      },
+      {
+        "total_return": 4.1324157822000105,
+        "annual_return": 0.367463662503865,
+        "max_drawdown": 0.23619830012370216,
+        "sharpe": 1.0968521351970637,
+        "final_value": 5132415.7822000105
+      }
+    ],
+    [
+      {
+        "max_positions": 5,
+        "position_pct": 0.15,
+        "momentum_threshold": 0.4,
+        "volume_ratio": 1.5,
+        "trailing_stop": 0.05,
+        "circuit_breaker": 0.08,
+        "rebalance_days": 7
+      },
+      {
+        "total_return": 4.1324157822000105,
+        "annual_return": 0.367463662503865,
+        "max_drawdown": 0.23619830012370216,
+        "sharpe": 1.0968521351970637,
+        "final_value": 5132415.7822000105
+      }
+    ],
+    [
+      {
+        "max_positions": 5,
+        "position_pct": 0.15,
+        "momentum_threshold": 0.4,
+        "volume_ratio": 1.5,
+        "trailing_stop": 0.05,
+        "circuit_breaker": 0.08,
+        "rebalance_days": 10
+      },
+      {
+        "total_return": 4.1324157822000105,
+        "annual_return": 0.367463662503865,
+        "max_drawdown": 0.23619830012370216,
+        "sharpe": 1.0968521351970637,
+        "final_value": 5132415.7822000105
+      }
+    ],
+    [
+      {
+        "max_positions": 5,
+        "position_pct": 0.15,
+        "momentum_threshold": 0.4,
+        "volume_ratio": 1.5,
+        "trailing_stop": 0.06,
+        "circuit_breaker": 0.08,
+        "rebalance_days": 5
+      },
+      {
+        "total_return": 4.069535466300013,
+        "annual_return": 0.36424196002220643,
+        "max_drawdown": 0.23623583985737648,
+        "sharpe": 1.0894277581560814,
+        "final_value": 5069535.466300013
+      }
+    ],
+    [
+      {
+        "max_positions": 5,
+        "position_pct": 0.15,
+        "momentum_threshold": 0.4,
+        "volume_ratio": 1.5,
+        "trailing_stop": 0.06,
+        "circuit_breaker": 0.08,
+        "rebalance_days": 7
+      },
+      {
+        "total_return": 4.069535466300013,
+        "annual_return": 0.36424196002220643,
+        "max_drawdown": 0.23623583985737648,
+        "sharpe": 1.0894277581560814,
+        "final_value": 5069535.466300013
+      }
+    ],
+    [
+      {
+        "max_positions": 5,
+        "position_pct": 0.15,
+        "momentum_threshold": 0.4,
+        "volume_ratio": 1.5,
+        "trailing_stop": 0.06,
+        "circuit_breaker": 0.08,
+        "rebalance_days": 10
+      },
+      {
+        "total_return": 4.069535466300013,
+        "annual_return": 0.36424196002220643,
+        "max_drawdown": 0.23623583985737648,
+        "sharpe": 1.0894277581560814,
+        "final_value": 5069535.466300013
+      }
+    ],
+    [
+      {
+        "max_positions": 5,
+        "position_pct": 0.15,
+        "momentum_threshold": 0.4,
+        "volume_ratio": 1.5,
+        "trailing_stop": 0.07,
+        "circuit_breaker": 0.08,
+        "rebalance_days": 5
+      },
+      {
+        "total_return": 4.03558692750001,
+        "annual_return": 0.3624891366353393,
+        "max_drawdown": 0.23621673606750104,
+        "sharpe": 1.0858453993797978,
+        "final_value": 5035586.92750001
+      }
+    ],
+    [
+      {
+        "max_positions": 5,
+        "position_pct": 0.15,
+        "momentum_threshold": 0.4,
+        "volume_ratio": 1.5,
+        "trailing_stop": 0.07,
+        "circuit_breaker": 0.08,
+        "rebalance_days": 7
+      },
+      {
+        "total_return": 4.03558692750001,
+        "annual_return": 0.3624891366353393,
+        "max_drawdown": 0.23621673606750104,
+        "sharpe": 1.0858453993797978,
+        "final_value": 5035586.92750001
+      }
+    ],
+    [
+      {
+        "max_positions": 5,
+        "position_pct": 0.15,
+        "momentum_threshold": 0.4,
+        "volume_ratio": 1.5,
+        "trailing_stop": 0.07,
+        "circuit_breaker": 0.08,
+        "rebalance_days": 10
+      },
+      {
+        "total_return": 4.03558692750001,
+        "annual_return": 0.3624891366353393,
+        "max_drawdown": 0.23621673606750104,
+        "sharpe": 1.0858453993797978,
+        "final_value": 5035586.92750001
+      }
+    ],
+    [
+      {
+        "max_positions": 5,
+        "position_pct": 0.15,
+        "momentum_threshold": 0.4,
+        "volume_ratio": 1.5,
+        "trailing_stop": 0.05,
+        "circuit_breaker": 0.1,
+        "rebalance_days": 5
+      },
+      {
+        "total_return": 4.005216976500014,
+        "annual_return": 0.3609129653334695,
+        "max_drawdown": 0.23611013144351234,
+        "sharpe": 1.0822475067672603,
+        "final_value": 5005216.976500014
+      }
+    ]
+  ],
+  "total_time": 42086.194101810455
+}

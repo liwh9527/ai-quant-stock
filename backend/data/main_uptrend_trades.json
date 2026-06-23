@@ -1,0 +1,47 @@
+[
+  {
+    "time": "2026-06-15T23:35:31.842244",
+    "account": {
+      "total_assets": 185.43,
+      "available_cash": 72.42,
+      "position_value": 113.01
+    },
+    "holdings": [
+      {
+        "name": "亨通光电",
+        "code": "600487",
+        "shares": 400,
+        "available": 400,
+        "price": 99.28,
+        "value": 39.71,
+        "pnl": -0.66
+      },
+      {
+        "name": "华电能源",
+        "code": "600726",
+        "shares": 7100,
+        "available": 7100,
+        "price": 8.56,
+        "value": 60.78,
+        "pnl": 0.29
+      },
+      {
+        "name": "紫金矿业",
+        "code": "601899",
+        "shares": 400,
+        "available": 400,
+        "price": 31.31,
+        "value": 12.52,
+        "pnl": 0.06
+      }
+    ],
+    "candidates": [
+      {
+        "name": "风华高科",
+        "code": "000636.SZ",
+        "price": 59.12,
+        "momentum": 1.1896296296296294,
+        "volume_ratio": 5.730058724701501,
+        "score": 0.8,
+        "conditions": {
+          "price_above_ma": 

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>量化交易系统 v14</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, 'PingFang SC', sans-serif; background: #0d1117; color: #e6edf3; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h1 { text-align: center; color: #58a6ff; margin-bottom: 24px; font-size: 28px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 20px; }
+        .card h2 { color: #58a6ff; font-size: 16px; margin-bottom: 16px; }
+        .metric { text-align: center; }
+        .metric .label { color: #8b949e; font-size: 12px; margin-bottom: 4px; }
+        .metric .value { font-size: 28px; font-weight: bold; }
+        .positive { color: #3fb950; }
+        .negative { color: #f85149; }
+        .neutral { color: #58a6ff; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #21262d; padding: 10px 12px; text-align: left; color: #8b949e; font-size: 13px; }
+        td { padding: 10px 12px; border-bottom: 1px solid #21262d; font-size: 13px; }
+        .chart-container { height: 350px; }
+        .status-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; }
+        .status-running { background: #238636; color: #fff; }
+        .status-stopped { background: #da3633; color: #fff; }
+        .refresh-btn { background: #21262d; border: 1px solid #30363d; color: #8b949e; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+        .refresh-btn:hover { background: #30363d; color: #e6edf3; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 量化交易系统 v14</h1>
+            <div>
+                <span class="status-badge status-running" id="status">● 运行中</span>
+                <button class="refresh-btn" onclick="refresh()">🔄 刷新</button>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card metric">
+                <div class="label">总资产</div>
+                <div class="value neutral" id="totalAssets">--</div>
+            </div>
+            <div class="card metric">
+                <div class="label">持仓市值</div>
+                <div class="value neutral" id="positionsValue">--</div>
+            </div>
+            <div class="card metric">
+                <div class="label">可用余额</div>
+                <div class="value" id="cash">--</div>
+            </div>
+            <div class="card metric">
+                <div class="label">总盈亏</div>
+                <div class="value" id="totalPnl">--</div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>📈 当前持仓</h2>
+                <table>
+                    <thead>
+                        <tr><th>股票</th><th>数量</th><th>成本</th><th>现价</th><th>盈亏</th></tr>
+                    </thead>
+                    <tbody id="positionsTable"></tbody>
+                </table>
+            </div>
+            <div class="card">
+                <h2>📝 今日交易</h2>
+                <table>
+                    <thead>
+                        <tr><th>时间</th><th>股票</th><th>操作</th><th>价格</th><th>数量</th></tr>
+                    </thead>
+                    <tbody id="tradesTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>📊 交易统计</h2>
+                <div id="statsContainer">
+                    <p style="color:#8b949e;">加载中...</p>
+                </div>
+            </div>
+            <div class="card">
+                <h2>📉 权益曲线</h2>
+                <div id="equityChart" class="chart-container"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔔 最近信号</h2>
+            <table>
+                <thead>
+                    <tr><th>时间</th><th>股票</th><th>类型</th><th>评分</th><th>执行</th></tr>
+                </thead>
+                <tbody id="signalsTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api/quant';
+
+        async function fetchJSON(url) {
+            try {
+                const resp = await fetch(url);
+                return await resp.json();
+            } catch (e) {
+                console.error('Fetch error:', e);
+                return null;
+            }
+        }
+
+        async function refresh() {
+            await Promise.all([
+                loadAccount(),
+                loadPositions(),
+                loadTrades(),
+                loadStats(),
+                loadSignals(),
+                loadEquityChart(),
+            ]);
+        }
+
+        async function loadAccount() {
+            const data = await fetchJSON(`${API_BASE}/account`);
+            if (!data) return;
+            document.getElementById('totalAssets').textContent = `¥${(data.totalAssets || 0).toLocaleString()}`;
+            document.getElementById('positionsValue').textContent = `¥${(data.marketValue || 0).toLocaleString()}`;
+            document.getElementById('cash').textContent = `¥${(data.availBalance || 0).toLocaleString()}`;
+        }
+
+        async function loadPositions() {
+            const data = await fetchJSON(`${API_BASE}/positions`);
+            if (!data || !data.positions) return;
+            const tbody = document.getElementById('positionsTable');
+            tbody.innerHTML = data.positions.map(p => {
+                const emoji = p.profit >= 0 ? '🟢' : '🔴';
+                const cls = p.profit >= 0 ? 'positive' : 'negative';
+                return `<tr>
+                    <td>${p.name}<br><small style="color:#8b949e">${p.code}</small></td>
+                    <td>${p.count}</td>
+                    <td>${p.cost_price.toFixed(2)}</td>
+                    <td>${p.current_price.toFixed(2)}</td>
+                    <td class="${cls}">${emoji} ${p.profit_pct.toFixed(2)}%</td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function loadTrades() {
+            const data = await fetchJSON(`${API_BASE}/trades?days=1`);
+            if (!data || !data.trades) return;
+            const tbody = document.getElementById('tradesTable');
+            if (data.trades.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="color:#8b949e;text-align:center;">今日无交易</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.trades.map(t => {
+                const emoji = t.action === '买入' ? '🟢' : '🔴';
+                const time = t.timestamp.substring(11, 16);
+                return `<tr>
+                    <td>${time}</td>
+                    <td>${t.name}</td>
+                    <td>${emoji} ${t.action}</td>
+                    <td>¥${t.price.toFixed(2)}</td>
+                    <td>${t.quantity}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function loadStats() {
+            const data = await fetchJSON(`${API_BASE}/stats`);
+            if (!data) return;
+            const container = document.getElementById('statsContainer');
+            const pnlClass = data.total_pnl >= 0 ? 'positive' : 'negative';
+            container.innerHTML = `
+                <table>
+                    <tr><td style="color:#8b949e">总交易</td><td>${data.total_trades} 笔</td></tr>
+                    <tr><td style="color:#8b949e">胜率</td><td>${(data.win_rate * 100).toFixed(1)}%</td></tr>
+                    <tr><td style="color:#8b949e">盈亏比</td><td>${data.profit_ratio.toFixed(2)}</td></tr>
+                    <tr><td style="color:#8b949e">累计盈亏</td><td class="${pnlClass}">¥${data.total_pnl.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</td></tr>
+                </table>
+            `;
+        }
+
+        async function loadSignals() {
+            const data = await fetchJSON(`${API_BASE}/signals?days=7`);
+            if (!data || !data.signals) return;
+            const tbody = document.getElementById('signalsTable');
+            tbody.innerHTML = data.signals.slice(0, 10).map(s => {
+                const time = s.timestamp.substring(5, 16).replace('T', ' ');
+                const typeEmoji = s.signal_type === 'buy' ? '🟢' : '🔴';
+                return `<tr>
+                    <td>${time}</td>
+                    <td>${s.name}</td>
+                    <td>${typeEmoji} ${s.signal_type === 'buy' ? '买入' : '卖出'}</td>
+                    <td>${s.score}</td>
+                    <td>${s.executed ? '✅' : '⏸️'}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function loadEquityChart() {
+            const data = await fetchJSON(`${API_BASE}/snapshots?days=30`);
+            if (!data || !data.snapshots || data.snapshots.length === 0) return;
+            
+            const chart = echarts.init(document.getElementById('equityChart'));
+            const dates = data.snapshots.map(s => s.date);
+            const values = data.snapshots.map(s => s.total_assets);
+            
+            chart.setOption({
+                backgroundColor: 'transparent',
+                tooltip: { trigger: 'axis' },
+                grid: { left: 60, right: 20, top: 20, bottom: 30 },
+                xAxis: { type: 'category', data: dates, axisLabel: { color: '#8b949e' } },
+                yAxis: { type: 'value', axisLabel: { color: '#8b949e', formatter: '¥{value}' } },
+                series: [{
+                    type: 'line',
+                    data: values,
+                    lineStyle: { color: '#58a6ff', width: 2 },
+                    itemStyle: { color: '#58a6ff' },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: 'rgba(88,166,255,0.3)' },
+                            { offset: 1, color: 'rgba(88,166,255,0.02)' }
+                        ])
+                    },
+                    showSymbol: false,
+                }]
+            });
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        refresh();
+        setInterval(refresh, 60000); // 每分钟刷新
+    </script>
+</body>
+</html>
