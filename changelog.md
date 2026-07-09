@@ -1,5 +1,62 @@
 # 变更日志
 
+## 2026-07-08
+
+- 新增统一策略库（10 个标准化策略）
+  - 动量轮动、海龟交易、多因子、趋势择时、价值投资
+  - 竞价涨停连板、均值回归、通道突破、低波动、双均线
+  - 策略注册中心：列表、详情、按分类过滤
+  - API：`GET /api/backtest/strategies`、`POST /api/backtest/strategies/{key}/run`
+  - 前端回测页面新增策略库 Tab，卡片展示，一键运行
+
+## 2026-07-06
+
+- 集成 Tushare 高速代理 API
+  - 新增 `TUSHARE_API_URL` 配置项，支持代理/官方 API 切换
+  - 更新 `TushareSource` 支持代理 URL 注入
+  - 更新工厂模式传递代理 URL
+  - 代理限速：每分钟 100 次，总量不限
+
+- 新增批量历史数据导入脚本
+  - 按日期批量获取日线行情和每日指标（效率最高）
+  - 逐只股票获取财务指标
+  - 自动限速、断点续传、失败重试
+  - 支持 `--only` 和 `--years` 参数
+
+## 2026-06-27
+
+- 修复 screening.py 死代码 Bug
+  - 将 label 生成代码从 `_rule_parse` 方法的 return 之后移到之前
+  - 提取 `_add_labels` 方法，供 `_rule_parse` 和 `parse_query` 共用
+  - 修复 7 个失败的测试用例
+
+- 修复前端测试框架
+  - 从 Jest 迁移到 Vitest
+  - 更新 package.json：移除 Jest 依赖，添加 Vitest 依赖
+  - 更新 vite.config.js：添加 test 配置（jsdom 环境）
+  - 更新测试文件：使用 vi.mock/vi.fn 替代 jest.mock/jest.fn
+  - 更新组件文件：添加 React import 以支持 JSX 测试
+  - 所有 33 个前端测试通过
+
+- 更新 specs/README.md
+  - 更新模块状态为"已完成"
+  - 添加 Phase 4 和 Phase 5 信息
+  - 更新待办事项
+
+- 拆分超大文件
+  - Attribution.jsx: 499 行 → 269 行（提取 MetricCard、PctValue、图表、表格组件）
+  - Screening.jsx: 438 行 → 259 行（提取 SortableHeader、ConditionTag、StockResultTable 组件）
+  - 创建 components/attribution/ 和 components/screening/ 目录
+
+- 清理脚本目录
+  - 添加 scripts/README.md 文档
+  - 创建 run_backtest.py 统一回测运行器
+  - 支持参数化策略运行
+
+- 更新 tasks.md 进度
+  - 修正 V2 回测引擎进度为 100%
+  - 更新总进度为 99%（仅剩 dividend 数据导入）
+
 ## 2026-06-09
 
 - 回测引擎 V2 重构计划

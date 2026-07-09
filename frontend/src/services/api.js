@@ -112,6 +112,23 @@ export function factorAttribution(data) {
   return api.post('/attribution/factor', data)
 }
 
+// ---- 策略库 ----
+
+/** 获取策略列表 */
+export function getStrategyList(params) {
+  return api.get('/backtest/strategies', { params })
+}
+
+/** 获取策略详情 */
+export function getStrategyDetail(key) {
+  return api.get(`/backtest/strategies/${key}`)
+}
+
+/** 运行策略 */
+export function runStrategy(key, params) {
+  return api.post(`/backtest/strategies/${key}/run`, params)
+}
+
 // ---- 因子系统 ----
 
 /** 获取因子列表 */

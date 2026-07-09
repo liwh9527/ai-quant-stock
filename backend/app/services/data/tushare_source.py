@@ -15,11 +15,20 @@ logger = logging.getLogger(__name__)
 
 
 class TushareSource(DataSourceBase):
-    """Tushare 数据源"""
+    """Tushare 数据源
 
-    def __init__(self, token: str):
+    支持官方 API 和代理 API（通过 TUSHARE_API_URL 配置）。
+    代理 API 限速每分钟 100 次，总量不限。
+    """
+
+    def __init__(self, token: str, api_url: str = ""):
         self.pro = ts.pro_api(token)
-        logger.info("Tushare 数据源初始化完成")
+        # 如果配置了代理 URL，替换默认 API 地址
+        if api_url:
+            self.pro._DataApi__http_url = api_url
+            logger.info(f"Tushare 代理数据源初始化完成: {api_url}")
+        else:
+            logger.info("Tushare 官方数据源初始化完成")
 
     def get_stock_list(self) -> pd.DataFrame:
         """调用 stock_basic 接口获取股票列表"""

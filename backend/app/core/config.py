@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     # 数据源配置
     DATA_SOURCE_TYPE: str = "tushare"  # 可选值: "tushare", "akshare"
     TUSHARE_TOKEN: str = ""
+    TUSHARE_API_URL: str = ""  # 留空使用官方API，填写则使用代理
 
     # AI 服务
     AI_PROVIDER: str = "deepseek"  # 可选值: "deepseek", "qwen"

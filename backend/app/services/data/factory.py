@@ -28,7 +28,10 @@ def get_data_source() -> DataSourceBase:
 
         if not settings.TUSHARE_TOKEN:
             logger.warning("TUSHARE_TOKEN 未配置，数据源可能无法正常工作")
-        return TushareSource(token=settings.TUSHARE_TOKEN)
+        return TushareSource(
+            token=settings.TUSHARE_TOKEN,
+            api_url=settings.TUSHARE_API_URL,
+        )
 
     elif source_type == "akshare":
         from .akshare_source import AkShareSource
