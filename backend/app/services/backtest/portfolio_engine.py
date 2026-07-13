@@ -1,9 +1,11 @@
 """多股票组合回测引擎"""
+import os
 from typing import Dict, List
 from datetime import datetime, timedelta
 from app.services.backtest.portfolio import Portfolio
 from app.services.backtest.order import Order, OrderManager
 from app.services.backtest.screening_engine import DailyScreeningEngine
+from app.services.backtest.screening_engine_fast import FastScreeningEngine
 from app.services.data.data_manager import DataManager
 
 
@@ -36,8 +38,13 @@ class PortfolioBacktestEngine:
         self.consecutive_losses = 0
         self.pause_remaining = 0  # 剩余暂停天数
 
-    def run(self, config: Dict, start_date: str, end_date: str) -> BacktestResult:
-        """执行回测"""
+    def run(self, config: Dict, start_date: str, end_date: str,
+            use_fast_engine: bool = True) -> BacktestResult:
+        """执行回测
+
+        Args:
+            use_fast_engine: 是否使用高性能引擎（默认 True）
+        """
         self.result = BacktestResult()
         initial_cash = config.get('initial_cash', 1000000)
         self.portfolio = Portfolio(initial_cash)
@@ -50,6 +57,13 @@ class PortfolioBacktestEngine:
         stamp_tax = cost_cfg.get('stamp_tax', 0.001)
 
         trade_dates = self.dm.get_trade_dates(start_date, end_date)
+
+        # 高性能引擎：预加载数据
+        fast_engine = None
+        if use_fast_engine:
+            db_path = self.dm.db_path
+            fast_engine = FastScreeningEngine(db_path)
+            fast_engine.preload(start_date, end_date)
 
         for date in trade_dates:
             # 1. 大盘择时
@@ -68,7 +82,10 @@ class PortfolioBacktestEngine:
             risk_cfg = config.get('risk_control', {})
             max_pos = risk_cfg.get('max_positions', 3)
             screening_cfg = config.get('screening', {})
-            candidates = self.screening.screen(date, screening_cfg, self.dm)
+            if fast_engine:
+                candidates = fast_engine.screen(date, screening_cfg)
+            else:
+                candidates = self.screening.screen(date, screening_cfg, self.dm)
             candidate_codes = [c.get('ts_code') for c in candidates[:20]]
 
             self.result.screening_log.append({

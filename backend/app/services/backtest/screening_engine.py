@@ -1,20 +1,15 @@
 """每日选股引擎"""
 import pandas as pd
+import numpy as np
 from typing import List, Dict, Any
+from datetime import datetime, timedelta
 
 
 class DailyScreeningEngine:
     """每日选股引擎，支持多条件组合筛选"""
 
     def screen(self, date: str, config: Dict, data_manager) -> List[Dict]:
-        """执行每日选股
-        config: {
-            'universe': 'all' | '主板' | '创业板',
-            'conditions': [{'field': 'close', 'op': '<', 'value': 50}, ...],
-            'sort': {'field': 'auction_pct', 'order': 'desc'},
-            'limit': 3
-        }
-        """
+        """执行每日选股"""
         # 1. 获取候选股票池
         df = self._get_universe(date, config, data_manager)
         if df.empty:
@@ -25,13 +20,16 @@ class DailyScreeningEngine:
         if df.empty:
             return []
 
-        # 3. 应用筛选条件
+        # 3. 计算派生字段（涨幅、连续上涨等）
+        df = self._calc_derived_fields(date, df, data_manager)
+
+        # 4. 应用筛选条件
         for cond in config.get('conditions', []):
             df = self._apply_condition(df, cond)
             if df.empty:
                 return []
 
-        # 4. 排序
+        # 5. 排序
         sort_cfg = config.get('sort')
         if sort_cfg:
             field = sort_cfg['field']
@@ -39,7 +37,7 @@ class DailyScreeningEngine:
             if field in df.columns:
                 df = df.sort_values(field, ascending=ascending)
 
-        # 5. 限制数量
+        # 6. 限制数量
         limit = config.get('limit', 10)
         df = df.head(limit)
 
@@ -111,6 +109,45 @@ class DailyScreeningEngine:
             merged['auction_pct'] = (merged['open'] / merged['pre_close'] - 1).fillna(0)
 
         return merged
+
+    def _calc_derived_fields(self, date: str, df: pd.DataFrame, data_manager) -> pd.DataFrame:
+        """从 daily_derived 预计算表读取派生字段（极速）"""
+        try:
+            d = datetime.strptime(date, '%Y%m%d').strftime('%Y-%m-%d')
+        except ValueError:
+            d = date
+
+        codes = df['ts_code'].tolist()
+        if not codes:
+            return df
+
+        # 从预计算表查询
+        import sqlite3
+        conn = sqlite3.connect(data_manager.db_path)
+        ph = ','.join(['?'] * len(codes))
+        cur = conn.execute(
+            f"SELECT ts_code, pct_chg_5d, pct_chg_10d, pct_chg_20d, consecutive_up_days "
+            f"FROM daily_derived WHERE trade_date = ? AND ts_code IN ({ph})",
+            [d] + codes
+        )
+        rows = cur.fetchall()
+        conn.close()
+
+        if rows:
+            derived = pd.DataFrame(rows, columns=['ts_code', 'pct_chg_5d', 'pct_chg_10d', 'pct_chg_20d', 'consecutive_up_days'])
+            df = df.merge(derived, on='ts_code', how='left')
+        else:
+            df['pct_chg_5d'] = np.nan
+            df['pct_chg_10d'] = np.nan
+            df['pct_chg_20d'] = np.nan
+            df['consecutive_up_days'] = 0
+
+        # 填充缺失值
+        for col in ['pct_chg_5d', 'pct_chg_10d', 'pct_chg_20d']:
+            df[col] = df[col].fillna(np.nan)
+        df['consecutive_up_days'] = df['consecutive_up_days'].fillna(0).astype(int)
+
+        return df
 
     def _apply_condition(self, df: pd.DataFrame, cond: Dict) -> pd.DataFrame:
         """应用单个筛选条件"""
