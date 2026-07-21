@@ -6,12 +6,14 @@ import Home from './pages/Home'
 import Screening from './pages/Screening'
 import Backtest from './pages/Backtest'
 import Signal from './pages/Signal'
+import Trading from './pages/Trading'
 
 const NAV_ITEMS = [
   { path: '/', label: '首页' },
   { path: '/screening', label: '选股' },
   { path: '/backtest', label: '回测' },
   { path: '/signal', label: '信号' },
+  { path: '/trading', label: '交易' },
 ]
 
 function App() {
@@ -50,6 +52,7 @@ function App() {
         <Route path="/screening" element={<Screening />} />
         <Route path="/backtest" element={<Backtest />} />
         <Route path="/signal" element={<Signal />} />
+        <Route path="/trading" element={<Trading />} />
       </Routes>
     </div>
   )

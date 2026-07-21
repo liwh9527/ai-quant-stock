@@ -146,4 +146,66 @@ export function scoreFactors(data) {
   return api.post('/factor/score', data)
 }
 
+// ---- 交易相关 ----
+
+/** 启动交易引擎 */
+export function startTradingEngine() {
+  return api.post('/trading/start')
+}
+
+/** 停止交易引擎 */
+export function stopTradingEngine() {
+  return api.post('/trading/stop')
+}
+
+/** 获取引擎状态 */
+export function getTradingStatus() {
+  return api.get('/trading/status')
+}
+
+/** 查询账户资金 */
+export function getTradingAccount() {
+  return api.get('/trading/account')
+}
+
+/** 查询持仓 */
+export function getTradingPositions() {
+  return api.get('/trading/positions')
+}
+
+/** 手动下单 */
+export function placeTradingOrder(data) {
+  return api.post('/trading/order', data)
+}
+
+/** 查询订单列表 */
+export function getTradingOrders(params) {
+  return api.get('/trading/orders', { params })
+}
+
+/** 查询待确认信号 */
+export function getTradingSignals() {
+  return api.get('/trading/signals')
+}
+
+/** 确认信号 */
+export function confirmTradingSignal(index) {
+  return api.post(`/trading/signals/${index}/confirm`)
+}
+
+/** 触发风控扫描 */
+export function scanTradingRisk() {
+  return api.post('/trading/risk/scan')
+}
+
+/** 获取风控状态 */
+export function getTradingRiskStatus() {
+  return api.get('/trading/risk/status')
+}
+
+/** 更新风控配置 */
+export function updateTradingRiskConfig(data) {
+  return api.put('/trading/risk/config', data)
+}
+
 export default api

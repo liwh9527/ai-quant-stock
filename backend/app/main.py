@@ -11,6 +11,7 @@ from app.api.backtest_v2 import router as backtest_v2_router
 from app.api.screening import router as screening_router
 from app.api.attribution import router as attribution_router
 from app.api.factor import router as factor_router
+from app.api.trading import router as trading_router
 
 app = FastAPI(
     title="AI 辅助量化选股工具",
@@ -35,6 +36,14 @@ app.include_router(backtest_router)
 app.include_router(screening_router)
 app.include_router(attribution_router)
 app.include_router(factor_router)
+app.include_router(trading_router)
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """应用关闭时清理交易引擎"""
+    from app.services.execution.scheduler import shutdown
+    await shutdown()
 
 
 @app.get("/")

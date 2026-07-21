@@ -27,6 +27,13 @@ class Settings(BaseSettings):
     QWEN_API_KEY: str = ""
     QWEN_BASE_URL: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 
+    # Broker 配置（交易）
+    BROKER_TYPE: str = "mx"  # 可选值: "mx", "xtquant", "sim"
+    MX_BASE_URL: str = "https://mxxysb.com"
+    MX_ACCOUNT: str = ""
+    MX_ACCOUNT_INDEX: int = 0
+    MX_APIKEY: str = ""
+
     # CORS 配置
     CORS_ORIGINS: str = '["http://localhost:5173","http://localhost:3000"]'
 
